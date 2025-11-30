@@ -26,15 +26,15 @@ This repository includes specialized GitHub Copilot agents to assist with develo
 
 | Agent | Description |
 |-------|-------------|
-| **[Product](/.github/agents/product.md)** | Product Manager for requirements, user stories, and feature specifications |
-| **[Developer](/.github/agents/developer.md)** | Senior .NET Developer for implementation, architecture, and Docker setup |
-| **[Test Automation](/.github/agents/test-automation.md)** | QA Engineer for unit tests, integration tests, and E2E testing |
-| **[DevOps](/.github/agents/devops.md)** | DevOps Engineer for CI/CD, Docker configuration, and deployment |
-| **[UI/UX Designer](/.github/agents/ui-designer.md)** | Designer for frontend components, user experience, and accessibility |
-| **[Security](/.github/agents/security.md)** | Security Engineer for authentication, authorization, and secure coding |
-| **[Database Architect](/.github/agents/database-architect.md)** | DBA for schema design, Entity Framework Core, and query optimization |
-| **[Code Reviewer](/.github/agents/code-reviewer.md)** | Senior engineer for code review, best practices, and quality |
-| **[API Designer](/.github/agents/api-designer.md)** | API specialist for RESTful design, OpenAPI specs, and documentation |
+| **[Product](/.github/agents/product.agent.md)** | Product Manager for requirements, user stories, and feature specifications |
+| **[Developer](/.github/agents/developer.agent.md)** | Senior .NET Developer for implementation, architecture, and Docker setup |
+| **[Test Automation](/.github/agents/test-automation.agent.md)** | QA Engineer for unit tests, integration tests, and E2E testing |
+| **[DevOps](/.github/agents/devops.agent.md)** | DevOps Engineer for CI/CD, Docker configuration, and deployment |
+| **[UI/UX Designer](/.github/agents/ui-designer.agent.md)** | Designer for frontend components, user experience, and accessibility |
+| **[Security](/.github/agents/security.agent.md)** | Security Engineer for authentication, authorization, and secure coding |
+| **[Database Architect](/.github/agents/database-architect.agent.md)** | DBA for schema design, Entity Framework Core, and query optimization |
+| **[Code Reviewer](/.github/agents/code-reviewer.agent.md)** | Senior engineer for code review, best practices, and quality |
+| **[API Designer](/.github/agents/api-designer.agent.md)** | API specialist for RESTful design, OpenAPI specs, and documentation |
 
 ## Project Structure (Planned)
 
