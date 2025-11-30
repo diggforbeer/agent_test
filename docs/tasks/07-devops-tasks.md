@@ -138,8 +138,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4.1.7
+      - uses: actions/setup-dotnet@v4.0.1
         with:
           dotnet-version: '8.0.x'
       - run: dotnet restore
