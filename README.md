@@ -95,6 +95,27 @@ dotnet test
 dotnet run --project src/FriendShare.Api
 ```
 
+## Project Documentation
+
+📋 **[Project Plan](docs/PROJECT_PLAN.md)** - Complete development plan with phases and sprints
+
+### Agent Task Assignments
+
+Detailed task assignments for each specialized agent to design and build the platform:
+
+| Phase | Agent | Tasks | Priority |
+|-------|-------|-------|----------|
+| 1 | Product | [Product Tasks](docs/tasks/01-product-tasks.md) | Must Have |
+| 1 | Database | [Database Tasks](docs/tasks/02-database-tasks.md) | Must Have |
+| 2 | API Designer | [API Design Tasks](docs/tasks/03-api-design-tasks.md) | Must Have |
+| 2 | Security | [Security Tasks](docs/tasks/04-security-tasks.md) | Must Have |
+| 3 | Developer | [Developer Tasks](docs/tasks/05-developer-tasks.md) | Must Have |
+| 3 | UI/UX Designer | [UI Design Tasks](docs/tasks/06-ui-design-tasks.md) | Must Have |
+| 4 | DevOps | [DevOps Tasks](docs/tasks/07-devops-tasks.md) | Should Have |
+| 4 | Test Automation | [Test Automation Tasks](docs/tasks/08-test-automation-tasks.md) | Should Have |
+
+See [Task Assignments Overview](docs/tasks/README.md) for detailed documentation.
+
 ## Key Features (Roadmap)
 
 - [ ] User authentication and profile management
