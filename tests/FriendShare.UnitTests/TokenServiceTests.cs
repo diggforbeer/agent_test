@@ -2,6 +2,7 @@ using FriendShare.Core.Configuration;
 using FriendShare.Infrastructure.Services;
 using Microsoft.Extensions.Options;
 using Moq;
+using FluentAssertions;
 
 namespace FriendShare.UnitTests;
 
@@ -28,6 +29,7 @@ public class TokenServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void GenerateAccessToken_ReturnsValidToken()
     {
         // Arrange
@@ -40,11 +42,12 @@ public class TokenServiceTests
         var token = _tokenService.GenerateAccessToken(userId, email, userName, roles);
 
         // Assert
-        Assert.NotNull(token);
-        Assert.NotEmpty(token);
+        token.Should().NotBeNullOrEmpty();
+        token.Split('.').Should().HaveCount(3); // JWT has 3 parts
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void GenerateRefreshToken_ReturnsUniqueTokens()
     {
         // Act
@@ -52,22 +55,25 @@ public class TokenServiceTests
         var token2 = _tokenService.GenerateRefreshToken();
 
         // Assert
-        Assert.NotNull(token1);
-        Assert.NotNull(token2);
-        Assert.NotEqual(token1, token2);
+        token1.Should().NotBeNullOrEmpty();
+        token2.Should().NotBeNullOrEmpty();
+        token1.Should().NotBe(token2);
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void GetTokenExpiration_ReturnsFutureDateTime()
     {
         // Act
         var expiration = _tokenService.GetTokenExpiration();
 
         // Assert
-        Assert.True(expiration > DateTime.UtcNow);
+        expiration.Should().BeAfter(DateTime.UtcNow);
+        expiration.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes), TimeSpan.FromSeconds(5));
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void GetPrincipalFromExpiredToken_WithValidToken_ReturnsPrincipal()
     {
         // Arrange
@@ -81,11 +87,13 @@ public class TokenServiceTests
         var principal = _tokenService.GetPrincipalFromExpiredToken(token);
 
         // Assert
-        Assert.NotNull(principal);
-        Assert.NotNull(principal.Identity);
+        principal.Should().NotBeNull();
+        principal!.Identity.Should().NotBeNull();
+        principal.Claims.Should().NotBeEmpty();
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void GetPrincipalFromExpiredToken_WithInvalidToken_ReturnsNull()
     {
         // Arrange
@@ -95,6 +103,6 @@ public class TokenServiceTests
         var principal = _tokenService.GetPrincipalFromExpiredToken(invalidToken);
 
         // Assert
-        Assert.Null(principal);
+        principal.Should().BeNull();
     }
 }
