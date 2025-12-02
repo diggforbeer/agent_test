@@ -23,7 +23,24 @@ Due to development environment limitations, directory creation requires executio
 
 ### How to Complete Setup (Choose One Method)
 
-#### Option 1: Automated Script (Recommended) ⭐
+### Option 1: Automated Python Script (Recommended - Cross-Platform) ⭐
+
+```bash
+python3 setup-auth-views.py
+```
+
+or on Windows:
+
+```bash
+python setup-auth-views.py
+```
+
+This will:
+1. Create `src/FriendShare.Web/Views/Auth/` directory
+2. Create all 4 view files with embedded content
+3. Display confirmation
+
+### Option 2: Bash Script (Unix/Linux/Mac)
 
 ```bash
 cd /home/runner/work/agent_test/agent_test
@@ -33,28 +50,17 @@ chmod +x create-auth-views.sh
 
 This will:
 1. Create `src/FriendShare.Web/Views/Auth/` directory
-2. Copy all 4 view files from `/tmp/`
+2. Create all 4 view files with embedded content
 3. Display confirmation
 
-#### Option 2: Manual Commands
+### Option 3: Manual Commands
 
 ```bash
 mkdir -p src/FriendShare.Web/Views/Auth
-cp /tmp/Login.cshtml src/FriendShare.Web/Views/Auth/
-cp /tmp/Register.cshtml src/FriendShare.Web/Views/Auth/
-cp /tmp/ForgotPassword.cshtml src/FriendShare.Web/Views/Auth/
-cp /tmp/ConfirmEmail.cshtml src/FriendShare.Web/Views/Auth/
+# Then run either the Python or Bash script above
 ```
 
-#### Option 3: Use Your IDE/File Manager
-
-1. Navigate to `src/FriendShare.Web/Views/`
-2. Create a folder named `Auth`
-3. Copy these 4 files from `/tmp/` to `Views/Auth/`:
-   - Login.cshtml
-   - Register.cshtml
-   - ForgotPassword.cshtml
-   - ConfirmEmail.cshtml
+The scripts contain all view file content embedded and will create the files automatically.
 
 ## 🚀 After Setup - Quick Start
 
@@ -188,8 +194,13 @@ Questions? Check the documentation files or review the code - everything is well
 
 ---
 
-**Run this now:**
+**Run this now (choose one):**
+
 ```bash
+# Python (cross-platform, recommended)
+python3 setup-auth-views.py
+
+# OR Bash (Unix/Linux/Mac)
 chmod +x create-auth-views.sh && ./create-auth-views.sh
 ```
 

@@ -16,6 +16,10 @@ A .NET web application that enables users to share items with their friends circ
 **📋 Setup Required:** Before running the web application, you need to create the Auth views directory:
 
 ```bash
+# Option 1: Python (cross-platform)
+python3 setup-auth-views.py
+
+# Option 2: Bash (Unix/Linux/Mac)
 chmod +x create-auth-views.sh && ./create-auth-views.sh
 ```
 
