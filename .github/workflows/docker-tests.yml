@@ -11,12 +11,14 @@ on:
       - 'docker-compose*.yml'
       - 'docker/**'
       - '.github/workflows/docker-tests.yml'
+      - 'test-docker-env.sh'
   push:
     branches: [main]
     paths:
       - 'docker-compose*.yml'
       - 'docker/**'
       - '.github/workflows/docker-tests.yml'
+      - 'test-docker-env.sh'
   workflow_dispatch:
 
 # Limit permissions of GITHUB_TOKEN
