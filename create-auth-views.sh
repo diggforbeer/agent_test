@@ -1,11 +1,14 @@
 #!/bin/bash
 
 # Script to create Auth views directory and files
+# Run this script from the repository root directory
 
 # Navigate to the project root
-cd "$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 # Create the Auth views directory
+echo "Creating Auth views directory..."
 mkdir -p src/FriendShare.Web/Views/Auth
 
 # Create Login.cshtml
