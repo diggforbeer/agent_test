@@ -41,26 +41,26 @@ jobs:
           echo "ASPNETCORE_ENVIRONMENT=Development" >> .env
 
       - name: Build Docker images
-        run: docker compose -f docker/docker-compose.yml build
+        run: docker compose --env-file .env -f docker/docker-compose.yml build
         timeout-minutes: 10
 
       - name: Start database service
-        run: docker compose -f docker/docker-compose.yml up -d db
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d db
         timeout-minutes: 2
 
       - name: Wait for database to be healthy
         run: |
           echo "Waiting for database to be healthy..."
-          timeout 60 bash -c 'until docker compose -f docker/docker-compose.yml ps db | grep -q "healthy"; do sleep 2; echo "Waiting..."; done'
+          timeout 60 bash -c 'until docker compose --env-file .env -f docker/docker-compose.yml ps db | grep -q "healthy"; do sleep 2; echo "Waiting..."; done'
           echo "Database is healthy!"
 
       - name: Test database connection
         run: |
-          docker compose -f docker/docker-compose.yml exec -T db pg_isready -U test_user -d friendshare
+          docker compose --env-file .env -f docker/docker-compose.yml exec -T db pg_isready -U test_user -d friendshare
           echo "Database connection successful!"
 
       - name: Start API service
-        run: docker compose -f docker/docker-compose.yml up -d api
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d api
         timeout-minutes: 3
 
       - name: Wait for API to be healthy
@@ -80,7 +80,7 @@ jobs:
           fi
 
       - name: Start Web service
-        run: docker compose -f docker/docker-compose.yml up -d web
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d web
         timeout-minutes: 3
 
       - name: Wait for Web to be healthy
@@ -102,11 +102,11 @@ jobs:
       - name: Verify all services are running
         run: |
           echo "=== Service Status ==="
-          docker compose -f docker/docker-compose.yml ps
+          docker compose --env-file .env -f docker/docker-compose.yml ps
           echo ""
           echo "=== Checking container health ==="
           # Use docker compose to check service health status
-          if docker compose -f docker/docker-compose.yml ps db | grep -q "healthy"; then
+          if docker compose --env-file .env -f docker/docker-compose.yml ps db | grep -q "healthy"; then
             echo "Database status: healthy"
           else
             echo "Warning: Database container not healthy"
@@ -115,15 +115,15 @@ jobs:
       - name: Test data persistence
         run: |
           echo "Creating test table..."
-          docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -c "CREATE TABLE IF NOT EXISTS test_persistence (id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT NOW());"
-          docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -c "INSERT INTO test_persistence DEFAULT VALUES;"
+          docker compose --env-file .env -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -c "CREATE TABLE IF NOT EXISTS test_persistence (id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT NOW());"
+          docker compose --env-file .env -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -c "INSERT INTO test_persistence DEFAULT VALUES;"
           
           echo "Restarting database..."
-          docker compose -f docker/docker-compose.yml restart db
+          docker compose --env-file .env -f docker/docker-compose.yml restart db
           sleep 10
           
           echo "Verifying data persisted..."
-          count=$(docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -t -c "SELECT COUNT(*) FROM test_persistence;" | xargs)
+          count=$(docker compose --env-file .env -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -t -c "SELECT COUNT(*) FROM test_persistence;" | xargs)
           if [ "$count" -ge 1 ]; then
             echo "Data persistence test passed! Found $count records."
           else
@@ -135,16 +135,16 @@ jobs:
         if: always()
         run: |
           echo "=== Database Logs ==="
-          docker compose -f docker/docker-compose.yml logs db --tail=50 || true
+          docker compose --env-file .env -f docker/docker-compose.yml logs db --tail=50 || true
           echo ""
           echo "=== API Logs ==="
-          docker compose -f docker/docker-compose.yml logs api --tail=50 || true
+          docker compose --env-file .env -f docker/docker-compose.yml logs api --tail=50 || true
           echo ""
           echo "=== Web Logs ==="
-          docker compose -f docker/docker-compose.yml logs web --tail=50 || true
+          docker compose --env-file .env -f docker/docker-compose.yml logs web --tail=50 || true
 
       - name: Cleanup
         if: always()
         run: |
-          docker compose -f docker/docker-compose.yml down -v --remove-orphans
+          docker compose --env-file .env -f docker/docker-compose.yml down -v --remove-orphans
           echo "Cleanup complete!"
