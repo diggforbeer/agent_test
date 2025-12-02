@@ -150,12 +150,14 @@ dotnet run --project src/FriendShare.Web
 
 Copy `.env.example` to `.env` and configure:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `POSTGRES_USER` | PostgreSQL username | friendshare |
-| `POSTGRES_PASSWORD` | PostgreSQL password | DevPassword123! |
-| `POSTGRES_DB` | PostgreSQL database name | friendshare |
-| `ASPNETCORE_ENVIRONMENT` | ASP.NET environment | Development |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `POSTGRES_USER` | PostgreSQL username | Yes - change from placeholder |
+| `POSTGRES_PASSWORD` | PostgreSQL password (min 16 characters recommended) | Yes - change from placeholder |
+| `POSTGRES_DB` | PostgreSQL database name | No (defaults to friendshare) |
+| `ASPNETCORE_ENVIRONMENT` | ASP.NET environment | No (defaults to Development) |
+
+> **⚠️ Security Note**: The `.env.example` file contains placeholder values. You MUST create a `.env` file with your own secure credentials before starting the application.
 
 ### Health Checks
 
@@ -173,6 +175,77 @@ All services include health check endpoints:
 - [ ] Notifications for requests and returns
 - [ ] Search and filtering
 - [ ] Mobile-responsive design
+
+## Security Considerations
+
+### Development Environment Security
+
+This project implements security best practices for Docker development environments:
+
+- **Port Binding**: All ports are bound to `127.0.0.1` (localhost only) to prevent external network access
+- **Network Isolation**: Separate Docker networks isolate frontend and backend services
+- **Non-root Users**: Production containers run as non-root users (`appuser`)
+- **Resource Limits**: CPU and memory limits prevent resource exhaustion attacks
+- **Read-only Filesystem**: Production containers use read-only root filesystems where possible
+- **Capability Dropping**: Unnecessary Linux capabilities are dropped from containers
+
+### Secret Management
+
+⚠️ **Important Security Guidelines**:
+
+1. **Never commit `.env` files** - The `.env` file contains secrets and is excluded from git via `.gitignore`
+2. **Use `.env.example` as a template** - Copy it to `.env` and replace ALL placeholder values
+3. **Use strong passwords** - Minimum 16 characters with mixed case, numbers, and symbols
+4. **Rotate secrets regularly** - Change database passwords periodically
+5. **Never share secrets via chat, email, or version control**
+
+```bash
+# Create your local environment file
+cp .env.example .env
+
+# Edit .env with your secure values
+# POSTGRES_USER=your_unique_username
+# POSTGRES_PASSWORD=your_strong_password_min_16_chars
+```
+
+### Docker Image Security
+
+- **Pinned Versions**: Base images use specific version tags (e.g., `dotnet:8.0`), not `latest`
+- **Official Images**: Only official Microsoft and PostgreSQL images are used
+- **Alpine Variants**: PostgreSQL uses Alpine Linux for smaller attack surface
+- **Multi-stage Builds**: Production images only contain runtime dependencies
+
+### Regular Security Maintenance
+
+```bash
+# Update base images weekly
+docker-compose pull
+
+# Scan for vulnerable NuGet packages monthly
+dotnet list package --vulnerable
+
+# Scan Docker images for vulnerabilities (requires Trivy)
+docker run --rm aquasec/trivy image friendshare-api:latest
+docker run --rm aquasec/trivy image friendshare-web:latest
+```
+
+### Production Considerations
+
+When deploying to production:
+
+1. **Use HTTPS** - Configure TLS termination at the reverse proxy
+2. **External Secrets** - Use a secrets manager (Azure Key Vault, AWS Secrets Manager, etc.)
+3. **Network Security** - Database should never be exposed externally
+4. **Image Scanning** - Integrate vulnerability scanning in CI/CD pipeline
+5. **Audit Logging** - Enable and monitor container and application logs
+
+### Reporting Security Issues
+
+If you discover a security vulnerability, please report it privately:
+
+- **Do not** open a public GitHub issue for security vulnerabilities
+- Contact the maintainers directly with details of the vulnerability
+- Allow reasonable time for a fix before public disclosure
 
 ## Contributing
 

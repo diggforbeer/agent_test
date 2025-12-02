@@ -1,6 +1,12 @@
 # =============================================================================
 # FriendShare.Web Development Dockerfile
 # Optimized for hot reload and debugging
+#
+# SECURITY NOTES:
+# - Development only - do not use in production
+# - Uses SDK image (larger attack surface) for development features
+# - Hot reload enabled for developer productivity
+# - No non-root user (required for volume mounts in dev)
 # =============================================================================
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
@@ -8,7 +14,9 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
 WORKDIR /src
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 # Copy project files for restore
 COPY ["FriendShare.sln", "./"]
@@ -31,7 +39,7 @@ ENV ASPNETCORE_URLS=http://+:8080
 ENV DOTNET_USE_POLLING_FILE_WATCHER=1
 ENV DOTNET_WATCH_RESTART_ON_RUDE_EDIT=1
 
-# Expose ports
+# Expose ports (non-privileged)
 EXPOSE 8080
 
 # Run with hot reload using dotnet watch
