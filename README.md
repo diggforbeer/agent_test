@@ -167,14 +167,30 @@ All services include health check endpoints:
 
 ## Key Features (Roadmap)
 
-- [ ] User authentication and profile management
-- [ ] Item listing with categories and images
-- [ ] Friend circle creation and management
-- [ ] Borrow request workflow
-- [ ] Item availability tracking
-- [ ] Notifications for requests and returns
-- [ ] Search and filtering
-- [ ] Mobile-responsive design
+See [MVP_EPICS.md](MVP_EPICS.md) for detailed epic specifications and acceptance criteria.
+
+### MVP Features (Prioritized)
+
+| Priority | Feature | Status |
+|----------|---------|--------|
+| Must Have | User authentication and profile management | 📋 Planned |
+| Must Have | Item listing with categories and images | 📋 Planned |
+| Must Have | Friend circle creation and management | 📋 Planned |
+| Should Have | Borrow request workflow | 📋 Planned |
+| Should Have | Item availability tracking | 📋 Planned |
+| Could Have | Notifications for requests and returns | 📋 Planned |
+| Could Have | Search and filtering | 📋 Planned |
+| Could Have | Mobile-responsive design | 📋 Planned |
+
+### Implementation Order
+1. User Authentication (foundation)
+2. Friend Circle Management (enables sharing boundaries)
+3. Item Management (core listing functionality)
+4. Borrow Request Workflow (core value proposition)
+5. Item Availability Tracking
+6. Notifications
+7. Search and Filtering
+8. Responsive Design
 
 ## Security Considerations
 
