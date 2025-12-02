@@ -278,7 +278,15 @@ test_data_persistence() {
     
     log_info "Restarting database container..."
     docker compose -f "$COMPOSE_FILE" restart db
-    sleep 10
+    log_info "Waiting for database to be healthy again..."
+    local count=0
+    while [ $count -lt 60 ]; do
+        if docker compose -f "$COMPOSE_FILE" ps db | grep -q "healthy"; then
+            break
+        fi
+        sleep 2
+        ((count+=2))
+    done
     
     log_info "Verifying data persisted..."
     local count
