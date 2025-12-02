@@ -122,7 +122,8 @@ jobs:
           
           echo "Restarting database..."
           docker compose --env-file .env -f docker/docker-compose.yml restart db
-          sleep 10
+          echo "Waiting for database to be healthy again..."
+          timeout 60 bash -c 'until docker compose --env-file .env -f docker/docker-compose.yml ps db | grep -q "healthy"; do sleep 2; echo "Waiting..."; done'
           
           echo "Verifying data persisted..."
           count=$(docker compose --env-file .env -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -t -c "SELECT COUNT(*) FROM test_persistence;" | xargs)
