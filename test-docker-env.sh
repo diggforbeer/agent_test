@@ -39,6 +39,9 @@ DEFAULT_DB_NAME="friendshare"
 TESTS_PASSED=0
 TESTS_FAILED=0
 
+# Track if we created the .env file
+CREATED_ENV_FILE=false
+
 # Helper functions
 log_info() {
     echo -e "${YELLOW}ℹ️  $1${NC}"
@@ -71,6 +74,12 @@ db_exec() {
 cleanup() {
     log_info "Cleaning up Docker resources..."
     docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
+    
+    # Remove auto-created .env file
+    if [ "$CREATED_ENV_FILE" = true ] && [ -f "${SCRIPT_DIR}/.env" ]; then
+        log_info "Removing auto-created test .env file..."
+        rm -f "${SCRIPT_DIR}/.env"
+    fi
 }
 
 check_prerequisites() {
@@ -100,23 +109,26 @@ setup_env() {
     
     # Check if .env exists, create test one if not
     if [ ! -f "${SCRIPT_DIR}/.env" ]; then
-        log_info "No .env file found, creating test configuration..."
+        log_info "No .env file found, creating temporary test configuration..."
         cat > "${SCRIPT_DIR}/.env" << EOF
 POSTGRES_USER=test_user
 POSTGRES_PASSWORD=test_password_secure_12345
 POSTGRES_DB=friendshare
 ASPNETCORE_ENVIRONMENT=Development
 EOF
+        CREATED_ENV_FILE=true
         log_success "Created test .env file"
+        log_info "⚠️  Test .env file created. It will be removed after tests complete."
     else
         log_success ".env file exists"
     fi
     
-    # Source the .env file
-    set -a
-    # shellcheck source=/dev/null
-    source "${SCRIPT_DIR}/.env"
-    set +a
+    # Safely read environment variables without executing arbitrary code
+    if [ -f "${SCRIPT_DIR}/.env" ]; then
+        POSTGRES_USER=$(grep -E "^POSTGRES_USER=" "${SCRIPT_DIR}/.env" | cut -d'=' -f2- | tr -d '"' | tr -d "'" || echo "$DEFAULT_DB_USER")
+        POSTGRES_DB=$(grep -E "^POSTGRES_DB=" "${SCRIPT_DIR}/.env" | cut -d'=' -f2- | tr -d '"' | tr -d "'" || echo "$DEFAULT_DB_NAME")
+        export POSTGRES_USER POSTGRES_DB
+    fi
 }
 
 test_cleanup() {
