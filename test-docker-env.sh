@@ -7,7 +7,7 @@
 #
 # Prerequisites:
 # - Docker and Docker Compose installed
-# - .env file configured (or will use defaults for testing)
+# - .env file configured (will be auto-created with test defaults if missing)
 # =============================================================================
 
 set -e
