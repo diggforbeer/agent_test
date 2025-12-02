@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FriendShare.Core\FriendShare.Core.csproj" />
+    <ProjectReference Include="..\FriendShare.Application\FriendShare.Application.csproj" />
+    <ProjectReference Include="..\FriendShare.Infrastructure\FriendShare.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
