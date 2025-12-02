@@ -46,10 +46,7 @@ services:
       - ALL
     cap_add:
       - CHOWN
-      - SETGID
-      - SETUID
       - DAC_OVERRIDE
-      - FOWNER
 
   # ---------------------------------------------------------------------------
   # FriendShare API (Production)
