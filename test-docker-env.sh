@@ -23,6 +23,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="${SCRIPT_DIR}/docker/docker-compose.yml"
 TIMEOUT_SECONDS=120
 
+# Service URLs
+API_HOST="localhost"
+API_PORT="5000"
+WEB_HOST="localhost"
+WEB_PORT="5001"
+API_HEALTH_URL="http://${API_HOST}:${API_PORT}/health"
+WEB_HEALTH_URL="http://${WEB_HOST}:${WEB_PORT}/health"
+
+# Default database credentials (can be overridden by .env)
+DEFAULT_DB_USER="test_user"
+DEFAULT_DB_NAME="friendshare"
+
 # Counters
 TESTS_PASSED=0
 TESTS_FAILED=0
@@ -47,6 +59,13 @@ log_header() {
     echo "=============================================="
     echo "  $1"
     echo "=============================================="
+}
+
+# Helper function to execute database commands
+db_exec() {
+    local db_user="${POSTGRES_USER:-$DEFAULT_DB_USER}"
+    local db_name="${POSTGRES_DB:-$DEFAULT_DB_NAME}"
+    docker compose -f "$COMPOSE_FILE" exec -T db psql -U "$db_user" -d "$db_name" "$@"
 }
 
 cleanup() {
@@ -142,7 +161,9 @@ test_database_start() {
 test_database_connection() {
     log_header "Test 4: Database Connection"
     
-    if docker compose -f "$COMPOSE_FILE" exec -T db pg_isready -U "${POSTGRES_USER:-test_user}" -d "${POSTGRES_DB:-friendshare}"; then
+    local db_user="${POSTGRES_USER:-$DEFAULT_DB_USER}"
+    local db_name="${POSTGRES_DB:-$DEFAULT_DB_NAME}"
+    if docker compose -f "$COMPOSE_FILE" exec -T db pg_isready -U "$db_user" -d "$db_name"; then
         log_success "Database connection successful"
     else
         log_error "Database connection failed"
@@ -158,7 +179,7 @@ test_api_start() {
     log_info "Waiting for API to be healthy (timeout: ${TIMEOUT_SECONDS}s)..."
     local count=0
     while [ $count -lt $TIMEOUT_SECONDS ]; do
-        if curl --silent --fail http://localhost:5000/health > /dev/null 2>&1; then
+        if curl --silent --fail "$API_HEALTH_URL" > /dev/null 2>&1; then
             log_success "API container is healthy"
             return 0
         fi
@@ -176,7 +197,7 @@ test_api_health() {
     log_header "Test 6: API Health Endpoint"
     
     local response
-    response=$(curl --silent --write-out "%{http_code}" --output /dev/null http://localhost:5000/health)
+    response=$(curl --silent --write-out "%{http_code}" --output /dev/null "$API_HEALTH_URL")
     
     if [ "$response" -eq 200 ]; then
         log_success "API health endpoint returned HTTP 200"
@@ -194,7 +215,7 @@ test_web_start() {
     log_info "Waiting for Web frontend to be healthy (timeout: ${TIMEOUT_SECONDS}s)..."
     local count=0
     while [ $count -lt $TIMEOUT_SECONDS ]; do
-        if curl --silent --fail http://localhost:5001/health > /dev/null 2>&1; then
+        if curl --silent --fail "$WEB_HEALTH_URL" > /dev/null 2>&1; then
             log_success "Web container is healthy"
             return 0
         fi
@@ -212,7 +233,7 @@ test_web_health() {
     log_header "Test 8: Web Health Endpoint"
     
     local response
-    response=$(curl --silent --write-out "%{http_code}" --output /dev/null http://localhost:5001/health)
+    response=$(curl --silent --write-out "%{http_code}" --output /dev/null "$WEB_HEALTH_URL")
     
     if [ "$response" -eq 200 ]; then
         log_success "Web health endpoint returned HTTP 200"
@@ -249,10 +270,8 @@ test_data_persistence() {
     log_header "Test 10: Data Persistence"
     
     log_info "Creating test table and data..."
-    docker compose -f "$COMPOSE_FILE" exec -T db psql -U "${POSTGRES_USER:-test_user}" -d "${POSTGRES_DB:-friendshare}" \
-        -c "CREATE TABLE IF NOT EXISTS test_persistence (id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT NOW());"
-    docker compose -f "$COMPOSE_FILE" exec -T db psql -U "${POSTGRES_USER:-test_user}" -d "${POSTGRES_DB:-friendshare}" \
-        -c "INSERT INTO test_persistence DEFAULT VALUES;"
+    db_exec -c "CREATE TABLE IF NOT EXISTS test_persistence (id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT NOW());"
+    db_exec -c "INSERT INTO test_persistence DEFAULT VALUES;"
     
     log_info "Restarting database container..."
     docker compose -f "$COMPOSE_FILE" restart db
@@ -260,8 +279,7 @@ test_data_persistence() {
     
     log_info "Verifying data persisted..."
     local count
-    count=$(docker compose -f "$COMPOSE_FILE" exec -T db psql -U "${POSTGRES_USER:-test_user}" -d "${POSTGRES_DB:-friendshare}" \
-        -t -c "SELECT COUNT(*) FROM test_persistence;" | tr -d ' ')
+    count=$(db_exec -t -c "SELECT COUNT(*) FROM test_persistence;" | xargs)
     
     if [ "$count" -ge 1 ]; then
         log_success "Data persistence verified - found $count records"

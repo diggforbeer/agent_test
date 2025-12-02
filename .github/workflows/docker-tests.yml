@@ -101,9 +101,10 @@ jobs:
           docker compose -f docker/docker-compose.yml ps
           echo ""
           echo "=== Checking container health ==="
-          db_status=$(docker inspect --format='{{.State.Health.Status}}' friendshare-db 2>/dev/null || echo "not found")
-          echo "Database status: $db_status"
-          if [ "$db_status" != "healthy" ]; then
+          # Use docker compose to check service health status
+          if docker compose -f docker/docker-compose.yml ps db | grep -q "healthy"; then
+            echo "Database status: healthy"
+          else
             echo "Warning: Database container not healthy"
           fi
 
@@ -118,8 +119,8 @@ jobs:
           sleep 10
           
           echo "Verifying data persisted..."
-          count=$(docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -t -c "SELECT COUNT(*) FROM test_persistence;")
-          if [ "$(echo $count | tr -d ' ')" -ge 1 ]; then
+          count=$(docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -t -c "SELECT COUNT(*) FROM test_persistence;" | xargs)
+          if [ "$count" -ge 1 ]; then
             echo "Data persistence test passed! Found $count records."
           else
             echo "Data persistence test failed!"
