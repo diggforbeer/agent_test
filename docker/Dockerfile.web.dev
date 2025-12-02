@@ -42,4 +42,5 @@ ENV DOTNET_WATCH_RESTART_ON_RUDE_EDIT=1
 EXPOSE 8080
 
 # Run with hot reload using dotnet watch
-ENTRYPOINT ["dotnet", "watch", "run", "--no-restore", "--urls", "http://+:8080"]
+# Use --no-launch-profile to prevent launchSettings.json from overriding ASPNETCORE_URLS
+ENTRYPOINT ["dotnet", "watch", "run", "--no-restore", "--no-launch-profile", "--urls", "http://+:8080"]
