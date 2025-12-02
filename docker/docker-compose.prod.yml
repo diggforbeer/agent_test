@@ -42,6 +42,7 @@ services:
           cpus: '2'
           memory: 1024M
     # SECURITY: Drop unnecessary capabilities
+    # PostgreSQL needs CHOWN for file ownership and DAC_OVERRIDE for file access
     cap_drop:
       - ALL
     cap_add:
