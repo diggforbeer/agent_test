@@ -140,7 +140,10 @@ test_build() {
 test_database_start() {
     log_header "Test 3: Database Container Startup"
     
-    docker compose -f "$COMPOSE_FILE" up -d db
+    if ! docker compose -f "$COMPOSE_FILE" up -d db; then
+        log_error "Failed to start database container"
+        return 1
+    fi
     
     log_info "Waiting for database to be healthy (timeout: ${TIMEOUT_SECONDS}s)..."
     local count=0
