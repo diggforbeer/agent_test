@@ -14,8 +14,8 @@ Friend Share is a social sharing platform where:
 ## Tech Stack
 
 - **Backend**: .NET 8 / ASP.NET Core
-- **Frontend**: ASP.NET Core MVC or Blazor
-- **Database**: SQL Server or PostgreSQL
+- **Frontend**: ASP.NET Core MVC
+- **Database**: PostgreSQL
 - **Authentication**: ASP.NET Core Identity
 - **Containerization**: Docker & Docker Compose
 - **Architecture**: Clean Architecture
@@ -36,12 +36,12 @@ This repository includes specialized GitHub Copilot agents to assist with develo
 | **[Code Reviewer](/.github/agents/code-reviewer.agent.md)** | Senior engineer for code review, best practices, and quality |
 | **[API Designer](/.github/agents/api-designer.agent.md)** | API specialist for RESTful design, OpenAPI specs, and documentation |
 
-## Project Structure (Planned)
+## Project Structure
 
 ```
 src/
 ├── FriendShare.Api/              # Web API project
-├── FriendShare.Web/              # Web frontend (MVC/Blazor)
+├── FriendShare.Web/              # Web frontend (MVC)
 ├── FriendShare.Core/             # Domain models, interfaces
 ├── FriendShare.Application/      # Business logic, services
 └── FriendShare.Infrastructure/   # Data access, external services
@@ -52,10 +52,12 @@ tests/
 └── FriendShare.E2ETests/
 
 docker/
-├── Dockerfile
-├── Dockerfile.dev
-├── docker-compose.yml
-└── docker-compose.prod.yml
+├── Dockerfile.api                # Production API Dockerfile
+├── Dockerfile.api.dev            # Development API Dockerfile (hot reload)
+├── Dockerfile.web                # Production Web Dockerfile
+├── Dockerfile.web.dev            # Development Web Dockerfile (hot reload)
+├── docker-compose.yml            # Development orchestration
+└── docker-compose.prod.yml       # Production orchestration
 ```
 
 ## Getting Started
@@ -64,22 +66,68 @@ docker/
 
 - .NET 8 SDK
 - Docker Desktop
-- SQL Server (or PostgreSQL) - can use Docker image
+- Git
 
-### Running with Docker
+### Running with Docker (Recommended)
+
+The fastest way to get started is using Docker Compose for development:
 
 ```bash
-# Build and run all services
+# 1. Clone the repository
+git clone <repository-url>
+cd agent_test
+
+# 2. Copy the environment file and customize if needed
+cp .env.example .env
+
+# 3. Build and run all services (from docker directory)
+cd docker
 docker-compose up --build
 
-# Run in detached mode
+# Or run in detached mode
+docker-compose up -d --build
+```
+
+Once running, access the applications at:
+- **Web Frontend**: http://localhost:5001
+- **API**: http://localhost:5000
+- **Swagger UI** (API docs): http://localhost:5000/swagger
+- **Database**: localhost:5432 (PostgreSQL)
+
+#### Docker Commands Reference
+
+```bash
+# Build and start all services
+cd docker
+docker-compose up --build
+
+# Start in background (detached mode)
 docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f api
 
 # Stop all services
 docker-compose down
+
+# Stop and remove volumes (reset database)
+docker-compose down -v
+
+# Rebuild a specific service
+docker-compose up --build api
 ```
 
-### Local Development
+#### Hot Reload Development
+
+The development Docker configuration supports hot reload:
+- Code changes in `src/` directories are automatically detected
+- The application rebuilds and restarts automatically
+- No need to restart containers for code changes
+
+### Local Development (Without Docker)
 
 ```bash
 # Restore dependencies
@@ -93,7 +141,27 @@ dotnet test
 
 # Run the API
 dotnet run --project src/FriendShare.Api
+
+# Run the Web frontend (in another terminal)
+dotnet run --project src/FriendShare.Web
 ```
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `POSTGRES_USER` | PostgreSQL username | friendshare |
+| `POSTGRES_PASSWORD` | PostgreSQL password | DevPassword123! |
+| `POSTGRES_DB` | PostgreSQL database name | friendshare |
+| `ASPNETCORE_ENVIRONMENT` | ASP.NET environment | Development |
+
+### Health Checks
+
+All services include health check endpoints:
+- API: http://localhost:5000/health
+- Web: http://localhost:5001/health
 
 ## Key Features (Roadmap)
 

@@ -1,0 +1,106 @@
+# =============================================================================
+# Docker Compose for FriendShare Development Environment
+# Usage: docker-compose up --build
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: friendshare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-friendshare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-DevPassword123!}
+      POSTGRES_DB: ${POSTGRES_DB:-friendshare}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-friendshare} -d ${POSTGRES_DB:-friendshare}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - friendshare-network
+
+  # ---------------------------------------------------------------------------
+  # FriendShare API (Development with hot reload)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api.dev
+    container_name: friendshare-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-friendshare};Username=${POSTGRES_USER:-friendshare};Password=${POSTGRES_PASSWORD:-DevPassword123!}"
+    ports:
+      - "5000:8080"
+    volumes:
+      - ../src/FriendShare.Api:/src/FriendShare.Api
+      - ../src/FriendShare.Core:/src/FriendShare.Core
+      - ../src/FriendShare.Application:/src/FriendShare.Application
+      - ../src/FriendShare.Infrastructure:/src/FriendShare.Infrastructure
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - friendshare-network
+
+  # ---------------------------------------------------------------------------
+  # FriendShare Web Frontend (Development with hot reload)
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web.dev
+    container_name: friendshare-web
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ApiBaseUrl: http://api:8080
+    ports:
+      - "5001:8080"
+    volumes:
+      - ../src/FriendShare.Web:/src/FriendShare.Web
+      - ../src/FriendShare.Core:/src/FriendShare.Core
+      - ../src/FriendShare.Application:/src/FriendShare.Application
+      - ../src/FriendShare.Infrastructure:/src/FriendShare.Infrastructure
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - friendshare-network
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  friendshare-network:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
