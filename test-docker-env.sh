@@ -210,7 +210,10 @@ test_api_health() {
 test_web_start() {
     log_header "Test 7: Web Container Startup"
     
-    docker compose -f "$COMPOSE_FILE" up -d web
+    if ! docker compose -f "$COMPOSE_FILE" up -d web; then
+        log_error "Failed to start Web container"
+        return 1
+    fi
     
     log_info "Waiting for Web frontend to be healthy (timeout: ${TIMEOUT_SECONDS}s)..."
     local count=0
