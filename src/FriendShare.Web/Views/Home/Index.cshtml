@@ -1,8 +1,110 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome to FriendShare";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section -->
+<div class="hero-section text-center py-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">Share Items with Friends</h1>
+        <p class="lead mb-4">Borrow what you need, lend what you have. Build trust in your community.</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a asp-controller="Auth" asp-action="Register" class="btn btn-primary btn-lg px-4">
+                Get Started
+            </a>
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary btn-lg px-4">
+                Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section py-5 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-search text-primary" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </div>
+                    <h3 class="h5 mb-2">Browse Items</h3>
+                    <p class="text-muted">Discover items available in your friend circle. Find what you need without buying.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-arrow-left-right text-primary" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                        </svg>
+                    </div>
+                    <h3 class="h5 mb-2">Request to Borrow</h3>
+                    <p class="text-muted">Send requests to borrow items from friends. Coordinate pickup and return easily.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-clipboard-check text-primary" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="h5 mb-2">Track Lending</h3>
+                    <p class="text-muted">Keep track of who borrowed what and when it's due. Stay organized effortlessly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="how-it-works-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-number mx-auto mb-3">1</div>
+                    <h4 class="h6">Create Your Account</h4>
+                    <p class="small text-muted">Sign up and set up your profile</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-number mx-auto mb-3">2</div>
+                    <h4 class="h6">Add Friends</h4>
+                    <p class="small text-muted">Connect with friends you trust</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-number mx-auto mb-3">3</div>
+                    <h4 class="h6">List Your Items</h4>
+                    <p class="small text-muted">Add items you're willing to share</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-number mx-auto mb-3">4</div>
+                    <h4 class="h6">Start Sharing</h4>
+                    <p class="small text-muted">Borrow and lend with confidence</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-3">Ready to start sharing?</h2>
+        <p class="lead mb-4">Join FriendShare today and build a sharing community with your friends.</p>
+        <a asp-controller="Auth" asp-action="Register" class="btn btn-light btn-lg px-4">
+            Sign Up Now
+        </a>
+    </div>
 </div>
