@@ -15,7 +15,7 @@ Friend Share is a social sharing platform where:
 
 - **Backend**: .NET 8 / ASP.NET Core
 - **Frontend**: ASP.NET Core MVC or Blazor
-- **Database**: SQL Server or PostgreSQL
+- **Database**: PostgreSQL
 - **Authentication**: ASP.NET Core Identity
 - **Containerization**: Docker & Docker Compose
 - **Architecture**: Clean Architecture
@@ -36,50 +36,133 @@ This repository includes specialized GitHub Copilot agents to assist with develo
 | **[Code Reviewer](/.github/agents/code-reviewer.agent.md)** | Senior engineer for code review, best practices, and quality |
 | **[API Designer](/.github/agents/api-designer.agent.md)** | API specialist for RESTful design, OpenAPI specs, and documentation |
 
-## Project Structure (Planned)
+## Project Structure
 
 ```
-src/
-├── FriendShare.Api/              # Web API project
-├── FriendShare.Web/              # Web frontend (MVC/Blazor)
-├── FriendShare.Core/             # Domain models, interfaces
-├── FriendShare.Application/      # Business logic, services
-└── FriendShare.Infrastructure/   # Data access, external services
-
-tests/
-├── FriendShare.UnitTests/
-├── FriendShare.IntegrationTests/
-└── FriendShare.E2ETests/
-
-docker/
-├── Dockerfile
-├── Dockerfile.dev
-├── docker-compose.yml
-└── docker-compose.prod.yml
+/
+├── src/
+│   ├── FriendShare.Api/              # Web API project
+│   │   └── Dockerfile
+│   ├── FriendShare.Web/              # Web frontend (MVC/Razor Pages)
+│   │   └── Dockerfile
+│   ├── FriendShare.Core/             # Domain models, interfaces
+│   ├── FriendShare.Application/      # Business logic, services
+│   └── FriendShare.Infrastructure/   # Data access, external services
+├── tests/
+│   ├── FriendShare.UnitTests/
+│   ├── FriendShare.IntegrationTests/
+│   └── FriendShare.E2ETests/
+├── docker-compose.yml                # Production-like configuration
+├── docker-compose.override.yml       # Development overrides (hot reload)
+├── .dockerignore
+├── .env.example
+└── FriendShare.sln
 ```
 
-## Getting Started
+## Getting Started with Docker
 
 ### Prerequisites
 
-- .NET 8 SDK
-- Docker Desktop
-- SQL Server (or PostgreSQL) - can use Docker image
+- Docker Desktop 4.0+ with Docker Compose v2
+- Git
+- (Optional) .NET 8 SDK for local development without Docker
 
-### Running with Docker
+### Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/diggforbeer/agent_test.git
+   cd agent_test
+   ```
+
+2. Copy `.env.example` to `.env` and update the passwords:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your preferred editor to set secure passwords
+   ```
+
+3. Start all services:
+   ```bash
+   docker-compose up --build
+   ```
+
+4. Access the application:
+   - **Web Frontend**: http://localhost:5000
+   - **API**: http://localhost:5001
+   - **API Health Check**: http://localhost:5001/health
+
+### Development Commands
 
 ```bash
-# Build and run all services
-docker-compose up --build
+# Start all services with hot reload (development mode)
+docker-compose up
 
-# Run in detached mode
+# Start all services in detached mode
 docker-compose up -d
+
+# Rebuild and start services
+docker-compose up --build
 
 # Stop all services
 docker-compose down
+
+# Stop and remove volumes (WARNING: deletes database data)
+docker-compose down -v
+
+# View logs for all services
+docker-compose logs -f
+
+# View logs for a specific service
+docker-compose logs -f api
+
+# Execute commands in running containers
+docker-compose exec api dotnet ef migrations add [MigrationName]
+docker-compose exec api dotnet ef database update
+
+# Restart a specific service
+docker-compose restart api
 ```
 
-### Local Development
+### Service Architecture
+
+```
+┌─────────────────┐
+│   Web Frontend  │ (Port 5000)
+│  (Razor Pages)  │
+└────────┬────────┘
+         │ HTTP
+         ▼
+┌─────────────────┐
+│   Web API       │ (Port 5001)
+│   (ASP.NET Core)│
+└────────┬────────┘
+         │ TCP
+         ▼
+┌─────────────────┐
+│   PostgreSQL    │ (Port 5432)
+│   (Database)    │
+└─────────────────┘
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Port conflicts | Edit port mappings in `docker-compose.yml` or `docker-compose.override.yml` |
+| Permission issues | Ensure Docker daemon is running; on Linux, add user to docker group |
+| Slow performance | Adjust Docker Desktop resource limits (CPU/Memory) |
+| Database connection errors | Wait for health check; verify `.env` credentials match |
+| Hot reload not working | Ensure `docker-compose.override.yml` is present; check volume mounts |
+
+### Production Deployment
+
+For production deployment, use only `docker-compose.yml` without the override file:
+
+```bash
+docker-compose -f docker-compose.yml up -d
+```
+
+## Local Development (Without Docker)
 
 ```bash
 # Restore dependencies
@@ -93,6 +176,9 @@ dotnet test
 
 # Run the API
 dotnet run --project src/FriendShare.Api
+
+# Run the Web frontend
+dotnet run --project src/FriendShare.Web
 ```
 
 ## Key Features (Roadmap)

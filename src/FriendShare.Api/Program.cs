@@ -1,0 +1,43 @@
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+// Add health checks
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        connectionString ?? "Host=localhost;Database=friendshare;Username=friendshare_user;Password=password",
+        name: "database",
+        tags: new[] { "db", "postgresql" });
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+
+// Map health check endpoint
+app.MapHealthChecks("/health");
+
+var summaries = new[]
+{
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
+
+app.MapGet("/weatherforecast", () =>
+{
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+});
+
+app.Run();
+
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}

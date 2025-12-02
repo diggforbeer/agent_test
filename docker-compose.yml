@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: friendshare-db
+    environment:
+      POSTGRES_DB: friendshare
+      POSTGRES_USER: ${DB_USER:-friendshare_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_secure_password_here}
+    ports:
+      - "5432:5432"
+    volumes:
+      - friendshare-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-friendshare_user} -d friendshare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - friendshare-network
+
+  api:
+    build:
+      context: ./src
+      dockerfile: FriendShare.Api/Dockerfile
+    container_name: friendshare-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=db;Database=friendshare;Username=${DB_USER:-friendshare_user};Password=${DB_PASSWORD:-your_secure_password_here}
+    ports:
+      - "5001:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - friendshare-network
+
+  web:
+    build:
+      context: ./src
+      dockerfile: FriendShare.Web/Dockerfile
+    container_name: friendshare-web
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ApiSettings__BaseUrl: http://api:8080
+    ports:
+      - "5000:8080"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - friendshare-network
+
+volumes:
+  friendshare-db-data:
+    name: friendshare-db-data
+
+networks:
+  friendshare-network:
+    name: friendshare-network
+    driver: bridge

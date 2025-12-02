@@ -1,0 +1,35 @@
+# Development override file for hot reload support
+# Usage: docker-compose up (automatically loads this file)
+
+services:
+  api:
+    build:
+      context: ./src
+      dockerfile: FriendShare.Api/Dockerfile
+      target: build
+    volumes:
+      - ./src:/src:cached
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+    command: dotnet watch run --project /src/FriendShare.Api --urls http://+:8080
+    ports:
+      - "5001:8080"
+      - "5011:5011"  # Debug port
+
+  web:
+    build:
+      context: ./src
+      dockerfile: FriendShare.Web/Dockerfile
+      target: build
+    volumes:
+      - ./src:/src:cached
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+    command: dotnet watch run --project /src/FriendShare.Web --urls http://+:8080
+    ports:
+      - "5000:8080"
+      - "5010:5010"  # Debug port

@@ -1,0 +1,45 @@
+# Build artifacts
+**/bin/
+**/obj/
+
+# IDE and editor folders
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Git
+**/.git/
+**/.gitignore
+
+# Node modules (if any frontend build tools used)
+**/node_modules/
+
+# Environment files (keep .env.example)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Documentation and configuration
+**/*.md
+!**/README.md
+**/docker-compose*.yml
+**/Dockerfile*
+**/.dockerignore
+
+# Test coverage and results
+**/coverage/
+**/TestResults/
+**/*.coverage
+**/*.coveragexml
+
+# OS generated files
+**/.DS_Store
+**/Thumbs.db
+
+# Logs
+**/logs/
+**/*.log
+
+# Temporary files
+**/tmp/
+**/temp/
