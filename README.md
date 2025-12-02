@@ -2,6 +2,28 @@
 
 A .NET web application that enables users to share items with their friends circles. Built to run in Docker, this platform allows users to list personal items they're willing to lend, create friend groups, and manage borrowing requests within their trusted network.
 
+## 🆕 Recent Updates
+
+### Authentication Pages Implementation (Latest)
+
+✅ **NEW:** Complete authentication system with homepage and user-facing pages
+- Landing page with hero section and feature highlights
+- Login, Registration, and Password Reset pages
+- Session-based authentication with JWT tokens
+- Responsive design with Bootstrap 5
+- Password strength indicator and form validation
+
+**📋 Setup Required:** Before running the web application, you need to create the Auth views directory:
+
+```bash
+chmod +x create-auth-views.sh && ./create-auth-views.sh
+```
+
+📚 **Documentation:**
+- `FINAL_SETUP_GUIDE.md` - Complete setup and testing guide
+- `IMPLEMENTATION_SUMMARY.md` - What was implemented
+- `SETUP_AUTH_VIEWS.md` - Quick reference
+
 ## Project Overview
 
 Friend Share is a social sharing platform where:
