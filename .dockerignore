@@ -1,0 +1,64 @@
+# =============================================================================
+# Docker Build Context Ignore File
+# Excludes files from Docker build context for security and efficiency
+# =============================================================================
+
+# Build results
+**/bin/
+**/obj/
+**/out/
+
+# IDE and editor directories
+.idea/
+.vs/
+.vscode/
+
+# NuGet
+**/packages/
+*.nupkg
+
+# Test results
+**/TestResults/
+**/coveragereport/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker files (not needed in build context for base images)
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+LICENSE
+
+# Environment files - SECURITY: Never include in build context
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+**/temp/
+**/tmp/
+
+# Secrets and credentials - SECURITY: Never include in build context
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+**/secrets/
+**/credentials/
+
+# GitHub files
+.github/
+
+# Log files
+*.log
+**/logs/

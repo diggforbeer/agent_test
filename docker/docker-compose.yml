@@ -1,0 +1,139 @@
+# =============================================================================
+# Docker Compose for FriendShare Development Environment
+# Usage: docker-compose up --build
+#
+# SECURITY NOTES:
+# - Database port is bound to localhost only (127.0.0.1)
+# - Use .env file for credentials (never commit .env to git)
+# - This configuration is for DEVELOPMENT ONLY
+# - See docker-compose.prod.yml for production configuration
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: friendshare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-friendshare}
+    # SECURITY: Bind to localhost only to prevent external access
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-friendshare}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+    # Resource limits to prevent resource exhaustion
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # FriendShare API (Development with hot reload)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api.dev
+    container_name: friendshare-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-friendshare};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+    # SECURITY: Bind to localhost only
+    ports:
+      - "127.0.0.1:5000:8080"
+    volumes:
+      - ../src/FriendShare.Api:/src/FriendShare.Api
+      - ../src/FriendShare.Core:/src/FriendShare.Core
+      - ../src/FriendShare.Application:/src/FriendShare.Application
+      - ../src/FriendShare.Infrastructure:/src/FriendShare.Infrastructure
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - backend
+      - frontend
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+
+  # ---------------------------------------------------------------------------
+  # FriendShare Web Frontend (Development with hot reload)
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web.dev
+    container_name: friendshare-web
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ApiBaseUrl: http://api:8080
+    # SECURITY: Bind to localhost only
+    ports:
+      - "127.0.0.1:5001:8080"
+    volumes:
+      - ../src/FriendShare.Web:/src/FriendShare.Web
+      - ../src/FriendShare.Core:/src/FriendShare.Core
+      - ../src/FriendShare.Application:/src/FriendShare.Application
+      - ../src/FriendShare.Infrastructure:/src/FriendShare.Infrastructure
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - frontend
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+
+# -----------------------------------------------------------------------------
+# Networks
+# SECURITY: Separate networks for frontend and backend isolation
+# - backend: Database and API communication (db not accessible from web)
+# - frontend: API and Web communication
+# -----------------------------------------------------------------------------
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local

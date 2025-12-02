@@ -1,0 +1,69 @@
+# =============================================================================
+# FriendShare.Web Dockerfile
+# Multi-stage build for ASP.NET Core MVC Frontend
+#
+# SECURITY NOTES:
+# - Uses pinned base image versions (not :latest)
+# - Runs as non-root user (appuser)
+# - Minimal runtime image (aspnet vs sdk)
+# - No secrets or credentials in this file
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Build
+# -----------------------------------------------------------------------------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files first for better layer caching
+COPY ["FriendShare.sln", "./"]
+COPY ["src/FriendShare.Web/FriendShare.Web.csproj", "src/FriendShare.Web/"]
+COPY ["src/FriendShare.Core/FriendShare.Core.csproj", "src/FriendShare.Core/"]
+COPY ["src/FriendShare.Application/FriendShare.Application.csproj", "src/FriendShare.Application/"]
+COPY ["src/FriendShare.Infrastructure/FriendShare.Infrastructure.csproj", "src/FriendShare.Infrastructure/"]
+
+# Restore dependencies
+RUN dotnet restore "src/FriendShare.Web/FriendShare.Web.csproj"
+
+# Copy the rest of the source code
+COPY ["src/", "src/"]
+
+# Build the application
+WORKDIR "/src/src/FriendShare.Web"
+RUN dotnet build "FriendShare.Web.csproj" -c Release -o /app/build
+
+# -----------------------------------------------------------------------------
+# Stage 2: Publish
+# -----------------------------------------------------------------------------
+FROM build AS publish
+RUN dotnet publish "FriendShare.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# -----------------------------------------------------------------------------
+# Stage 3: Runtime
+# -----------------------------------------------------------------------------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# SECURITY: Create non-root user and group
+RUN addgroup --system --gid 10001 appgroup && \
+    adduser --system --uid 10001 --ingroup appgroup --no-create-home appuser
+
+# Copy published application with proper ownership
+COPY --from=publish --chown=appuser:appgroup /app/publish .
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Expose port (non-privileged port)
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl --fail http://localhost:8080/health || exit 1
+
+# SECURITY: Switch to non-root user
+USER appuser
+
+# Start the application
+ENTRYPOINT ["dotnet", "FriendShare.Web.dll"]

@@ -1,0 +1,156 @@
+# =============================================================================
+# Docker Compose for FriendShare Production Environment
+# Usage: docker-compose -f docker-compose.prod.yml up --build
+#
+# SECURITY NOTES:
+# - Database is NOT exposed to host (internal network only)
+# - Use strong, unique credentials in .env file
+# - Containers run as non-root users (see Dockerfiles)
+# - Read-only root filesystem enabled where possible
+# - Resource limits prevent resource exhaustion attacks
+# - Capabilities dropped to minimum required
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: friendshare-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-friendshare}
+    # SECURITY: No port exposed to host - internal network only
+    # Use: docker exec -it friendshare-db psql -U <user> -d <db> for admin access
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-friendshare}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+    # SECURITY: Drop unnecessary capabilities
+    # PostgreSQL needs CHOWN for file ownership and DAC_OVERRIDE for file access
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+
+  # ---------------------------------------------------------------------------
+  # FriendShare API (Production)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: friendshare-api
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-friendshare};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+    # SECURITY: Only expose internally, use reverse proxy for external access
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - backend
+      - frontend
+    # SECURITY: Read-only root filesystem with necessary tmpfs mounts
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512M
+    # SECURITY: Drop all capabilities (app doesn't need any)
+    cap_drop:
+      - ALL
+    # SECURITY: Prevent privilege escalation
+    security_opt:
+      - no-new-privileges:true
+
+  # ---------------------------------------------------------------------------
+  # FriendShare Web Frontend (Production)
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    container_name: friendshare-web
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ApiBaseUrl: http://api:8080
+    ports:
+      - "80:8080"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - frontend
+    # SECURITY: Read-only root filesystem with necessary tmpfs mounts
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512M
+    # SECURITY: Drop all capabilities (app doesn't need any)
+    cap_drop:
+      - ALL
+    # SECURITY: Prevent privilege escalation
+    security_opt:
+      - no-new-privileges:true
+
+# -----------------------------------------------------------------------------
+# Networks
+# SECURITY: Separate networks for service isolation
+# - backend: Database and API communication (web cannot access db directly)
+# - frontend: API and Web communication
+# -----------------------------------------------------------------------------
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
