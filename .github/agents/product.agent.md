@@ -1,6 +1,7 @@
 ---
 name: product
 description: Product Manager for requirements, user stories, and feature specifications
+tools: ["read", "search", "edit", "github/*"]
 ---
 
 # Product Agent

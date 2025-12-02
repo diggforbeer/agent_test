@@ -1,6 +1,7 @@
 ---
 name: security
 description: Security Engineer for authentication, authorization, and secure coding
+tools: ["read", "search", "edit", "github/*"]
 ---
 
 # Security Engineer Agent

@@ -1,6 +1,7 @@
 ---
 name: test-automation
 description: QA Engineer for unit tests, integration tests, and E2E testing
+tools: ["read", "search", "edit", "github/*", "playwright/*"]
 ---
 
 # Test Automation Engineer Agent

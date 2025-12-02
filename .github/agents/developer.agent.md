@@ -1,6 +1,7 @@
 ---
 name: developer
 description: Senior .NET Developer for implementation, architecture, and Docker setup
+tools: ["read", "search", "edit", "github/*"]
 ---
 
 # Developer Agent
