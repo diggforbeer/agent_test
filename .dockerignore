@@ -1,3 +1,8 @@
+# =============================================================================
+# Docker Build Context Ignore File
+# Excludes files from Docker build context for security and efficiency
+# =============================================================================
+
 # Build results
 **/bin/
 **/obj/
@@ -19,6 +24,7 @@
 # Git
 .git/
 .gitignore
+.gitattributes
 
 # Docker files (not needed in build context for base images)
 docker-compose*.yml
@@ -28,10 +34,10 @@ docker-compose*.yml
 *.md
 LICENSE
 
-# Environment files
+# Environment files - SECURITY: Never include in build context
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # OS files
 .DS_Store
@@ -40,3 +46,19 @@ Thumbs.db
 # Temporary files
 **/temp/
 **/tmp/
+
+# Secrets and credentials - SECURITY: Never include in build context
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+**/secrets/
+**/credentials/
+
+# GitHub files
+.github/
+
+# Log files
+*.log
+**/logs/

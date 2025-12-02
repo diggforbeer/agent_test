@@ -1,6 +1,12 @@
 # =============================================================================
 # FriendShare.Web Dockerfile
 # Multi-stage build for ASP.NET Core MVC Frontend
+#
+# SECURITY NOTES:
+# - Uses pinned base image versions (not :latest)
+# - Runs as non-root user (appuser)
+# - Minimal runtime image (aspnet vs sdk)
+# - No secrets or credentials in this file
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -38,25 +44,25 @@ RUN dotnet publish "FriendShare.Web.csproj" -c Release -o /app/publish /p:UseApp
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup --system --gid 1000 appgroup && \
-    adduser --system --uid 1000 --ingroup appgroup appuser
+# SECURITY: Create non-root user and group
+RUN addgroup --system --gid 10001 appgroup && \
+    adduser --system --uid 10001 --ingroup appgroup --no-create-home appuser
 
-# Copy published application
-COPY --from=publish /app/publish .
+# Copy published application with proper ownership
+COPY --from=publish --chown=appuser:appgroup /app/publish .
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Expose port
+# Expose port (non-privileged port)
 EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl --fail http://localhost:8080/health || exit 1
 
-# Switch to non-root user
+# SECURITY: Switch to non-root user
 USER appuser
 
 # Start the application
