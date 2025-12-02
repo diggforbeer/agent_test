@@ -1,0 +1,173 @@
+name: Test Automation Agent Task
+description: Testing task - unit tests, integration tests, and E2E testing
+title: "[TEST]: "
+labels: ["testing", "quality-assurance"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Test Automation Agent Task
+        This issue is for test automation work including unit tests, integration tests, and end-to-end testing.
+
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Issue
+      description: Link to the parent feature request (if applicable)
+      placeholder: "#123"
+
+  - type: dropdown
+    id: test-type
+    attributes:
+      label: Test Type
+      options:
+        - Unit Tests
+        - Integration Tests
+        - End-to-End Tests
+        - Performance Tests
+        - Security Tests
+        - Test Strategy
+        - Test Coverage Analysis
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Testing Requirements
+      description: What needs to be tested?
+      placeholder: Describe the features, components, or scenarios that need test coverage
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-scenarios
+    attributes:
+      label: Test Scenarios
+      description: List the test scenarios to cover
+      placeholder: |
+        **Happy Path:**
+        - User creates an item successfully
+        - User updates item details
+        
+        **Edge Cases:**
+        - Attempt to create item with invalid data
+        - Attempt to access unauthorized item
+        
+        **Error Cases:**
+        - Database connection failure
+        - Null reference handling
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: test-categories
+    attributes:
+      label: Test Categories
+      description: Which test categories apply?
+      options:
+        - label: Unit Tests (Domain/Services)
+        - label: Unit Tests (Validators)
+        - label: Integration Tests (API)
+        - label: Integration Tests (Database)
+        - label: E2E Tests (User Flows)
+        - label: Authentication/Authorization Tests
+        - label: Performance Tests
+        - label: Smoke Tests
+
+  - type: textarea
+    id: unit-tests
+    attributes:
+      label: Unit Test Details
+      description: Specific unit tests to implement (if applicable)
+      placeholder: |
+        **Class**: ItemService
+        **Methods to test**:
+        - CreateItemAsync
+        - UpdateItemAsync
+        - DeleteItemAsync
+        
+        **Test cases**:
+        - CreateItem_WithValidData_ReturnsCreatedItem
+        - CreateItem_WithNullData_ThrowsArgumentException
+
+  - type: textarea
+    id: integration-tests
+    attributes:
+      label: Integration Test Details
+      description: API endpoints or integration scenarios to test (if applicable)
+      placeholder: |
+        **Endpoint**: POST /api/items
+        **Test cases**:
+        - CreateItem_WithValidAuth_Returns201
+        - CreateItem_WithoutAuth_Returns401
+        - CreateItem_WithInvalidData_Returns400
+
+  - type: textarea
+    id: e2e-tests
+    attributes:
+      label: E2E Test Details
+      description: User flows to test end-to-end (if applicable)
+      placeholder: |
+        **User Flow**: Share Item with Friend
+        1. User logs in
+        2. User creates an item
+        3. User adds friend to circle
+        4. Friend browses available items
+        5. Friend requests to borrow item
+
+  - type: checkboxes
+    id: testing-checklist
+    attributes:
+      label: Testing Implementation Checklist
+      options:
+        - label: Arrange-Act-Assert pattern used
+        - label: Meaningful test names
+        - label: Mock dependencies configured
+        - label: FluentAssertions used
+        - label: Test categories/traits applied
+        - label: Both positive and negative cases covered
+        - label: Edge cases tested
+        - label: Setup/teardown implemented
+        - label: Test data cleanup handled
+
+  - type: textarea
+    id: mocking-strategy
+    attributes:
+      label: Mocking Strategy
+      description: What needs to be mocked and how?
+      placeholder: |
+        - Mock IItemRepository with Moq
+        - Mock IAuthenticationService
+        - Use in-memory database for integration tests
+
+  - type: dropdown
+    id: coverage-target
+    attributes:
+      label: Code Coverage Target
+      options:
+        - 90%+ (Critical paths)
+        - 80%+ (Most code)
+        - 70%+ (Reasonable coverage)
+        - 60%+ (Basic coverage)
+
+  - type: textarea
+    id: test-data
+    attributes:
+      label: Test Data Requirements
+      description: What test data is needed?
+      placeholder: |
+        - Sample users with different roles
+        - Sample items in various states
+        - Sample friend circles
+
+  - type: textarea
+    id: ci-cd-integration
+    attributes:
+      label: CI/CD Integration
+      description: How should tests run in the pipeline?
+      placeholder: |
+        - Run unit tests on every commit
+        - Run integration tests on PR
+        - Run E2E tests before deployment

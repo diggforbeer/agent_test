@@ -1,0 +1,137 @@
+name: Developer Agent Task
+description: Development task - implementation, architecture, and Docker setup
+title: "[DEV]: "
+labels: ["development", "implementation"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Developer Agent Task
+        This issue is for development work including implementation, architecture decisions, and Docker configuration.
+
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Issue
+      description: Link to the parent feature request (if applicable)
+      placeholder: "#123"
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      options:
+        - Feature Implementation
+        - Architecture Design
+        - Docker Configuration
+        - Database Schema
+        - API Endpoint
+        - Bug Fix
+        - Refactoring
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Implementation Description
+      description: Detailed description of what needs to be implemented
+      placeholder: Describe the technical implementation required
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: Technical Requirements
+      description: Specific technical requirements and constraints
+      placeholder: |
+        - Must use Entity Framework Core
+        - Should follow Clean Architecture pattern
+        - Must include proper error handling
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: implementation-checklist
+    attributes:
+      label: Implementation Checklist
+      options:
+        - label: Domain models created/updated
+        - label: Repository interfaces defined
+        - label: Service/business logic implemented
+        - label: API endpoints created
+        - label: DTOs and mapping configured
+        - label: Validation implemented
+        - label: Error handling added
+        - label: Dependency injection configured
+        - label: XML documentation added
+        - label: Database migrations created (if needed)
+
+  - type: textarea
+    id: api-design
+    attributes:
+      label: API Design
+      description: API endpoints and contracts (if applicable)
+      placeholder: |
+        **Endpoint**: POST /api/items
+        **Request Body**: 
+        ```json
+        {
+          "name": "string",
+          "description": "string"
+        }
+        ```
+        **Response**: 201 Created with item details
+
+  - type: textarea
+    id: database-changes
+    attributes:
+      label: Database Changes
+      description: Any schema changes, migrations, or data model updates
+      placeholder: |
+        - Add Items table
+        - Add foreign key to Users
+        - Create index on Name column
+
+  - type: textarea
+    id: architecture-notes
+    attributes:
+      label: Architecture & Design Decisions
+      description: Important architectural decisions and trade-offs
+      placeholder: |
+        - Using Repository pattern for data access
+        - CQRS for complex queries
+        - Why approach X was chosen over Y
+
+  - type: textarea
+    id: docker-notes
+    attributes:
+      label: Docker Configuration
+      description: Docker-related changes (if applicable)
+      placeholder: |
+        - Dockerfile changes
+        - docker-compose updates
+        - Environment variable additions
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: NuGet Dependencies
+      description: Any new packages or libraries needed
+      placeholder: |
+        - Microsoft.EntityFrameworkCore (v8.0.0)
+        - AutoMapper (v12.0.0)
+
+  - type: checkboxes
+    id: code-standards
+    attributes:
+      label: Code Standards Compliance
+      options:
+        - label: Follows C# coding conventions
+        - label: Uses nullable reference types
+        - label: Async/await for I/O operations
+        - label: SOLID principles applied
+        - label: XML documentation on public APIs
+        - label: Proper using statements and namespaces

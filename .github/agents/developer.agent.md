@@ -24,7 +24,7 @@ This project is a **Friend Item Sharing Platform** built with:
 
 - **Backend**: ASP.NET Core Web API
 - **Frontend**: ASP.NET Core MVC or Blazor (to be determined)
-- **Database**: SQL Server or PostgreSQL
+- **Database**: PostgreSQL
 - **Authentication**: ASP.NET Core Identity
 - **Containerization**: Docker and Docker Compose
 - **Architecture**: Clean Architecture pattern

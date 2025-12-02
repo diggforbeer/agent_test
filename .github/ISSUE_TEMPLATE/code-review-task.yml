@@ -1,0 +1,184 @@
+name: Code Review Agent Task
+description: Code review task - quality review, best practices, and refactoring
+title: "[REVIEW]: "
+labels: ["code-review", "quality"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Code Review Agent Task
+        This issue is for code review work including quality assessment, best practice recommendations, and refactoring suggestions.
+
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Issue
+      description: Link to the parent feature request or PR (if applicable)
+      placeholder: "#123 or PR #45"
+
+  - type: dropdown
+    id: review-type
+    attributes:
+      label: Review Type
+      options:
+        - Code Quality Review
+        - Architecture Review
+        - Performance Review
+        - Security Review (Code-level)
+        - Refactoring Suggestion
+        - Best Practices Audit
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Review Scope
+      description: What code or files should be reviewed?
+      placeholder: |
+        - File: src/FriendShare.Api/Controllers/ItemsController.cs
+        - Component: Item management services
+        - Feature: User authentication flow
+    validations:
+      required: true
+
+  - type: textarea
+    id: review-focus
+    attributes:
+      label: Review Focus Areas
+      description: What should the review focus on?
+      placeholder: |
+        - Error handling patterns
+        - Async/await usage
+        - SOLID principles compliance
+        - Code duplication
+        - Testability
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: review-checklist
+    attributes:
+      label: Review Checklist
+      options:
+        - label: Code Quality (naming, structure, clarity)
+        - label: SOLID principles adherence
+        - label: Design patterns appropriate
+        - label: No code duplication (DRY)
+        - label: Error handling comprehensive
+        - label: Security considerations
+        - label: Performance optimization
+        - label: Testability (injectable dependencies)
+        - label: Documentation adequate
+        - label: Async/await used correctly
+        - label: Nullable reference types handled
+        - label: No N+1 query issues
+
+  - type: textarea
+    id: findings
+    attributes:
+      label: Review Findings
+      description: Document review findings with severity
+      placeholder: |
+        ### 🔴 Critical Issues
+        - [Issue description and location]
+        
+        ### 🟠 Major Issues
+        - [Issue description and location]
+        
+        ### 🟡 Minor Issues
+        - [Issue description and location]
+        
+        ### 🟢 Suggestions
+        - [Enhancement suggestions]
+        
+        ### ✅ Good Practices Observed
+        - [Positive feedback]
+
+  - type: textarea
+    id: code-smells
+    attributes:
+      label: Code Smells Identified
+      description: Any code smells or anti-patterns found
+      placeholder: |
+        - Long method in ItemService.CreateAsync (>50 lines)
+        - God class: ItemManager handles too many responsibilities
+        - Feature envy: OrderService accessing Order internals excessively
+
+  - type: textarea
+    id: refactoring-suggestions
+    attributes:
+      label: Refactoring Suggestions
+      description: Recommended refactoring with code examples
+      placeholder: |
+        **Current Code:**
+        ```csharp
+        public class ItemService
+        {
+            // 200 lines of mixed responsibilities
+        }
+        ```
+        
+        **Suggested Refactoring:**
+        ```csharp
+        public class ItemService
+        {
+            private readonly IItemValidator _validator;
+            private readonly IItemRepository _repository;
+            // Focused responsibilities
+        }
+        ```
+        
+        **Rationale:** Separates validation logic, improves testability
+
+  - type: textarea
+    id: performance-concerns
+    attributes:
+      label: Performance Concerns
+      description: Any performance issues or optimization opportunities
+      placeholder: |
+        - N+1 query issue in GetItemsWithOwners
+        - Missing index on frequently queried column
+        - Unnecessary allocations in tight loop
+
+  - type: textarea
+    id: security-concerns
+    attributes:
+      label: Security Concerns (Code-level)
+      description: Code-level security issues found
+      placeholder: |
+        - Missing input validation in CreateItem endpoint
+        - Authorization check missing in DeleteItem method
+        - Potential SQL injection in raw query
+
+  - type: textarea
+    id: documentation-gaps
+    attributes:
+      label: Documentation Gaps
+      description: Missing or inadequate documentation
+      placeholder: |
+        - Public method CreateItemAsync lacks XML comments
+        - Complex algorithm needs explanation
+        - README doesn't explain setup process
+
+  - type: dropdown
+    id: overall-quality
+    attributes:
+      label: Overall Code Quality Assessment
+      options:
+        - Excellent (Production-ready, minimal issues)
+        - Good (Minor improvements needed)
+        - Fair (Several issues to address)
+        - Needs Work (Major refactoring required)
+
+  - type: textarea
+    id: recommendations
+    attributes:
+      label: Recommendations & Next Steps
+      description: High-level recommendations and action items
+      placeholder: |
+        1. Address critical null reference issues before merge
+        2. Consider refactoring ItemService into smaller classes
+        3. Add XML documentation to public APIs
+        4. Improve test coverage for edge cases

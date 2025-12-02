@@ -1,0 +1,78 @@
+name: Feature Request
+description: Request a new feature or enhancement
+title: "[FEATURE]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+        Please provide detailed information about the feature you're requesting.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature is this?
+      options:
+        - New functionality
+        - Enhancement to existing feature
+        - Performance improvement
+        - Developer experience
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: Describe the feature or enhancement in detail
+      placeholder: As a [user type], I want [feature], so that [benefit]
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be true for this feature to be considered complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - Must have (Critical)
+        - Should have (Important)
+        - Could have (Nice to have)
+        - Won't have (Future consideration)
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Considerations
+      description: Any technical details, constraints, or implementation notes
+      placeholder: Consider performance, security, scalability, etc.
+
+  - type: checkboxes
+    id: agent-assignments
+    attributes:
+      label: Agent Assignments
+      description: Which agents should work on this feature? (Will create sub-issues)
+      options:
+        - label: Product Agent (Requirements & User Stories)
+        - label: Developer Agent (Implementation & Architecture)
+        - label: Security Agent (Security Review & Hardening)
+        - label: Test Automation Agent (Test Coverage)
+        - label: Code Reviewer Agent (Code Quality Review)

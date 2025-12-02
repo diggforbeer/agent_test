@@ -1,0 +1,152 @@
+name: Security Agent Task
+description: Security task - authentication, authorization, and secure coding
+title: "[SECURITY]: "
+labels: ["security", "vulnerability"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Security Agent Task
+        This issue is for security-related work including authentication, authorization, vulnerability fixes, and secure coding practices.
+
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Issue
+      description: Link to the parent feature request (if applicable)
+      placeholder: "#123"
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      options:
+        - Security Review
+        - Authentication Implementation
+        - Authorization Implementation
+        - Vulnerability Fix
+        - Threat Modeling
+        - Security Testing
+        - Compliance Review
+        - Secret Management
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Security severity level (if applicable)
+      options:
+        - Critical (Immediate action required)
+        - High (Address within 1 week)
+        - Medium (Address within 1 month)
+        - Low (Address when possible)
+        - Informational
+
+  - type: textarea
+    id: security-issue
+    attributes:
+      label: Security Issue / Requirement
+      description: Detailed description of the security concern or requirement
+      placeholder: Describe the security issue, vulnerability, or security feature needed
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: owasp-categories
+    attributes:
+      label: OWASP Top 10 Categories
+      description: Which OWASP categories apply?
+      options:
+        - label: A01 - Broken Access Control
+        - label: A02 - Cryptographic Failures
+        - label: A03 - Injection
+        - label: A04 - Insecure Design
+        - label: A05 - Security Misconfiguration
+        - label: A06 - Vulnerable and Outdated Components
+        - label: A07 - Identification and Authentication Failures
+        - label: A08 - Software and Data Integrity Failures
+        - label: A09 - Security Logging and Monitoring Failures
+        - label: A10 - Server-Side Request Forgery (SSRF)
+
+  - type: textarea
+    id: threat-analysis
+    attributes:
+      label: Threat Analysis
+      description: What are the potential threats or attack vectors?
+      placeholder: |
+        - Attack vector: ...
+        - Impact if exploited: ...
+        - Likelihood: ...
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this be addressed or implemented?
+      placeholder: |
+        - Authentication approach: ...
+        - Authorization mechanism: ...
+        - Mitigation strategy: ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: security-checklist
+    attributes:
+      label: Security Implementation Checklist
+      options:
+        - label: HTTPS enforced
+        - label: Input validation implemented
+        - label: Output encoding applied
+        - label: Authentication configured
+        - label: Authorization checks in place
+        - label: Anti-forgery tokens used
+        - label: Secure cookie settings
+        - label: Rate limiting configured
+        - label: Audit logging added
+        - label: Secrets not hardcoded
+        - label: Dependencies scanned
+
+  - type: textarea
+    id: authentication-details
+    attributes:
+      label: Authentication Details
+      description: Authentication requirements and configuration (if applicable)
+      placeholder: |
+        - Identity provider: ASP.NET Core Identity
+        - Password policy: ...
+        - MFA requirement: ...
+        - Session management: ...
+
+  - type: textarea
+    id: authorization-details
+    attributes:
+      label: Authorization Details
+      description: Authorization requirements and policies (if applicable)
+      placeholder: |
+        - Resource-based authorization for items
+        - Policy: ItemOwner
+        - Roles required: ...
+
+  - type: textarea
+    id: compliance-notes
+    attributes:
+      label: Compliance Requirements
+      description: GDPR, CCPA, or other compliance considerations
+      placeholder: |
+        - PII handling: ...
+        - Data retention: ...
+        - User consent: ...
+
+  - type: textarea
+    id: testing-strategy
+    attributes:
+      label: Security Testing Strategy
+      description: How should this be tested for security?
+      placeholder: |
+        - Penetration testing approach
+        - Security unit tests
+        - Automated security scanning

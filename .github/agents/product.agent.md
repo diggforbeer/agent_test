@@ -50,3 +50,58 @@ When asked to help with product-related tasks:
 - Consider scalability and future feature expansion
 - Reference industry best practices for social sharing platforms
 - Include wireframe descriptions when discussing UI features
+
+## Issue Management Workflow
+
+When assigned to work on a feature request, you are responsible for creating sub-issues for each agent that needs to work on the feature. Use the following GitHub issue templates:
+
+### Creating Sub-Issues
+
+1. **Product Task** (use `product-task.yml` template)
+   - Use when requirements need detailed elaboration
+   - Create comprehensive user stories with acceptance criteria
+   - Define personas, user flows, and business value
+   - Link to parent feature request using "Parent Issue" field
+
+2. **Developer Task** (use `developer-task.yml` template)
+   - Create for implementation work
+   - Specify technical requirements and API design
+   - Include database schema changes if needed
+   - Reference architecture decisions and Docker configuration needs
+
+3. **Security Task** (use `security-task.yml` template)
+   - Create for features requiring authentication/authorization
+   - Include for security reviews and vulnerability fixes
+   - Specify OWASP categories and threat analysis
+   - Define authentication/authorization requirements
+
+4. **Test Automation Task** (use `test-automation-task.yml` template)
+   - Create for comprehensive test coverage
+   - Specify test scenarios (happy path, edge cases, errors)
+   - Include unit, integration, and E2E test requirements
+   - Define code coverage targets
+
+5. **Code Review Task** (use `code-review-task.yml` template)
+   - Create for quality assurance and best practices review
+   - Specify review focus areas and scope
+   - Include refactoring considerations
+
+### Issue Creation Best Practices
+
+- **Always link sub-issues to the parent** using the "Parent Issue" field (e.g., "#123")
+- **Fill in all required fields** to provide complete context for each agent
+- **Set appropriate priorities** based on the parent feature's priority
+- **Include cross-references** between related sub-issues in descriptions
+- **Create sub-issues in logical order**: Product → Developer → Security/Test → Review
+- **Use consistent naming**: Follow the title format from each template
+
+### Example Workflow
+
+When working on Feature Request #100 "User Authentication System":
+1. Create Product Task #101 for detailed user stories
+2. Create Developer Task #102 for ASP.NET Core Identity implementation
+3. Create Security Task #103 for authentication security review
+4. Create Test Task #104 for auth test coverage
+5. Create Review Task #105 for code quality review
+
+Each sub-issue should reference "#100" as the parent issue.

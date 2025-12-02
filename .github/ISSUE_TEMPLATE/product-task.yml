@@ -1,0 +1,127 @@
+name: Product Agent Task
+description: Product management task - requirements, user stories, and feature specifications
+title: "[PRODUCT]: "
+labels: ["product", "requirements"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Product Agent Task
+        This issue is for product-related work including requirements gathering, user story creation, and feature specifications.
+
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Issue
+      description: Link to the parent feature request (if applicable)
+      placeholder: "#123"
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      options:
+        - User Story Creation
+        - Requirements Definition
+        - Feature Specification
+        - User Journey Mapping
+        - Acceptance Criteria
+        - MVP Definition
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: User story in standard format
+      placeholder: "As a [persona], I want [feature], so that [benefit]"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: persona
+    attributes:
+      label: User Persona
+      description: Which persona does this affect?
+      options:
+        - Item Owner
+        - Borrower
+        - Circle Admin
+        - All Users
+        - System Admin
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Clear, testable acceptance criteria (Given/When/Then format)
+      placeholder: |
+        **Scenario 1**: Basic Flow
+        - Given: [initial context]
+        - When: [action]
+        - Then: [expected outcome]
+        
+        **Scenario 2**: Edge Case
+        - Given: [initial context]
+        - When: [action]
+        - Then: [expected outcome]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (MoSCoW)
+      options:
+        - Must have
+        - Should have
+        - Could have
+        - Won't have
+    validations:
+      required: true
+
+  - type: textarea
+    id: business-value
+    attributes:
+      label: Business Value
+      description: What value does this deliver? What metrics will measure success?
+      placeholder: |
+        - User benefit: ...
+        - Business impact: ...
+        - Success metrics: ...
+
+  - type: textarea
+    id: user-flow
+    attributes:
+      label: User Flow / Journey
+      description: Describe the user's journey through this feature
+      placeholder: |
+        1. User navigates to...
+        2. User clicks/enters...
+        3. System displays...
+
+  - type: textarea
+    id: edge-cases
+    attributes:
+      label: Edge Cases & Error Scenarios
+      description: What could go wrong? What edge cases should be handled?
+      placeholder: |
+        - What if no items are available?
+        - What if user doesn't have permission?
+        - What if network fails during operation?
+
+  - type: textarea
+    id: ui-notes
+    attributes:
+      label: UI/UX Considerations
+      description: Any wireframe descriptions, UI flow, or UX notes
+      placeholder: Describe key UI elements, interactions, and user experience
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What features or tasks must be completed first?
+      placeholder: "- Depends on #123\n- Requires user authentication system"
