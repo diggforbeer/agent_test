@@ -1,0 +1,145 @@
+# =============================================================================
+# Docker Environment Tests
+# Verifies that the Docker development environment works correctly
+# =============================================================================
+
+name: Docker Environment Tests
+
+on:
+  pull_request:
+    paths:
+      - 'docker-compose*.yml'
+      - 'docker/**'
+      - '.github/workflows/docker-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docker-compose*.yml'
+      - 'docker/**'
+      - '.github/workflows/docker-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  docker-tests:
+    name: Docker Environment Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env file for testing
+        run: |
+          echo "POSTGRES_USER=test_user" >> .env
+          echo "POSTGRES_PASSWORD=test_password_secure_12345" >> .env
+          echo "POSTGRES_DB=friendshare" >> .env
+          echo "ASPNETCORE_ENVIRONMENT=Development" >> .env
+
+      - name: Build Docker images
+        run: docker compose -f docker/docker-compose.yml build
+        timeout-minutes: 10
+
+      - name: Start database service
+        run: docker compose -f docker/docker-compose.yml up -d db
+        timeout-minutes: 2
+
+      - name: Wait for database to be healthy
+        run: |
+          echo "Waiting for database to be healthy..."
+          timeout 60 bash -c 'until docker compose -f docker/docker-compose.yml ps db | grep -q "healthy"; do sleep 2; echo "Waiting..."; done'
+          echo "Database is healthy!"
+
+      - name: Test database connection
+        run: |
+          docker compose -f docker/docker-compose.yml exec -T db pg_isready -U test_user -d friendshare
+          echo "Database connection successful!"
+
+      - name: Start API service
+        run: docker compose -f docker/docker-compose.yml up -d api
+        timeout-minutes: 3
+
+      - name: Wait for API to be healthy
+        run: |
+          echo "Waiting for API to be healthy..."
+          timeout 120 bash -c 'until curl --silent --fail http://localhost:5000/health; do sleep 3; echo "Waiting for API..."; done'
+          echo "API is healthy!"
+
+      - name: Test API health endpoint
+        run: |
+          response=$(curl --silent --write-out "%{http_code}" --output /dev/null http://localhost:5000/health)
+          if [ "$response" -eq 200 ]; then
+            echo "API health check passed (HTTP $response)"
+          else
+            echo "API health check failed (HTTP $response)"
+            exit 1
+          fi
+
+      - name: Start Web service
+        run: docker compose -f docker/docker-compose.yml up -d web
+        timeout-minutes: 3
+
+      - name: Wait for Web to be healthy
+        run: |
+          echo "Waiting for Web frontend to be healthy..."
+          timeout 120 bash -c 'until curl --silent --fail http://localhost:5001/health; do sleep 3; echo "Waiting for Web..."; done'
+          echo "Web frontend is healthy!"
+
+      - name: Test Web health endpoint
+        run: |
+          response=$(curl --silent --write-out "%{http_code}" --output /dev/null http://localhost:5001/health)
+          if [ "$response" -eq 200 ]; then
+            echo "Web health check passed (HTTP $response)"
+          else
+            echo "Web health check failed (HTTP $response)"
+            exit 1
+          fi
+
+      - name: Verify all services are running
+        run: |
+          echo "=== Service Status ==="
+          docker compose -f docker/docker-compose.yml ps
+          echo ""
+          echo "=== Checking container health ==="
+          db_status=$(docker inspect --format='{{.State.Health.Status}}' friendshare-db 2>/dev/null || echo "not found")
+          echo "Database status: $db_status"
+          if [ "$db_status" != "healthy" ]; then
+            echo "Warning: Database container not healthy"
+          fi
+
+      - name: Test data persistence
+        run: |
+          echo "Creating test table..."
+          docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -c "CREATE TABLE IF NOT EXISTS test_persistence (id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT NOW());"
+          docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -c "INSERT INTO test_persistence DEFAULT VALUES;"
+          
+          echo "Restarting database..."
+          docker compose -f docker/docker-compose.yml restart db
+          sleep 10
+          
+          echo "Verifying data persisted..."
+          count=$(docker compose -f docker/docker-compose.yml exec -T db psql -U test_user -d friendshare -t -c "SELECT COUNT(*) FROM test_persistence;")
+          if [ "$(echo $count | tr -d ' ')" -ge 1 ]; then
+            echo "Data persistence test passed! Found $count records."
+          else
+            echo "Data persistence test failed!"
+            exit 1
+          fi
+
+      - name: Check for errors in logs
+        if: always()
+        run: |
+          echo "=== Database Logs ==="
+          docker compose -f docker/docker-compose.yml logs db --tail=50 || true
+          echo ""
+          echo "=== API Logs ==="
+          docker compose -f docker/docker-compose.yml logs api --tail=50 || true
+          echo ""
+          echo "=== Web Logs ==="
+          docker compose -f docker/docker-compose.yml logs web --tail=50 || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.yml down -v --remove-orphans
+          echo "Cleanup complete!"
