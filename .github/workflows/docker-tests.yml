@@ -19,6 +19,10 @@ on:
       - '.github/workflows/docker-tests.yml'
   workflow_dispatch:
 
+# Limit permissions of GITHUB_TOKEN
+permissions:
+  contents: read
+
 jobs:
   docker-tests:
     name: Docker Environment Integration Tests
