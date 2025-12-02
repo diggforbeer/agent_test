@@ -177,7 +177,10 @@ test_database_connection() {
 test_api_start() {
     log_header "Test 5: API Container Startup"
     
-    docker compose -f "$COMPOSE_FILE" up -d api
+    if ! docker compose -f "$COMPOSE_FILE" up -d api; then
+        log_error "Failed to start API container"
+        return 1
+    fi
     
     log_info "Waiting for API to be healthy (timeout: ${TIMEOUT_SECONDS}s)..."
     local count=0
