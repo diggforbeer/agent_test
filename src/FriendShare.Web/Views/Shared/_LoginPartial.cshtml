@@ -1,0 +1,38 @@
+@using Microsoft.AspNetCore.Http
+
+@{
+    var isAuthenticated = Context.Session.GetString("UserName") != null;
+    var userName = Context.Session.GetString("UserName");
+}
+
+@if (isAuthenticated)
+{
+    <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                @userName
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index">My Profile</a></li>
+                <li><a class="dropdown-item" asp-controller="Items" asp-action="MyItems">My Items</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    </ul>
+}
+else
+{
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Auth" asp-action="Login">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link btn btn-primary text-white ms-2" asp-controller="Auth" asp-action="Register">Sign Up</a>
+        </li>
+    </ul>
+}
