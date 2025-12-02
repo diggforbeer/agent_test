@@ -1,0 +1,42 @@
+# Build results
+**/bin/
+**/obj/
+**/out/
+
+# IDE and editor directories
+.idea/
+.vs/
+.vscode/
+
+# NuGet
+**/packages/
+*.nupkg
+
+# Test results
+**/TestResults/
+**/coveragereport/
+
+# Git
+.git/
+.gitignore
+
+# Docker files (not needed in build context for base images)
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+LICENSE
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+**/temp/
+**/tmp/
