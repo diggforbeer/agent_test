@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddHealthChecks()
     .AddNpgSql(
-        connectionString ?? "Host=localhost;Database=friendshare;Username=friendshare_user;Password=password",
+        connectionString ?? "Host=localhost;Database=friendshare;Username=friendshare_user;Password=change_me_in_production",
         name: "database",
         tags: new[] { "db", "postgresql" });
 
