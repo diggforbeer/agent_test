@@ -80,7 +80,7 @@ jobs:
           playwright install-deps chromium
 
       - name: Run Playwright tests
-        run: dotnet test tests/FriendShare.E2ETests.csproj --configuration Release --logger "trx;LogFileName=test-results.trx" --no-build --verbosity normal
+        run: dotnet test tests/FriendShare.E2ETests.csproj --configuration Release --logger "trx;LogFileName=test-results.trx" --verbosity normal
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright
 
