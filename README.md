@@ -162,8 +162,14 @@ dotnet restore
 # Build the solution
 dotnet build
 
-# Run tests
+# Run all tests
 dotnet test
+
+# Run unit tests only
+dotnet test --filter "Category=Unit"
+
+# Run E2E tests (requires web app running)
+dotnet test tests/FriendShare.E2ETests.csproj
 
 # Run the API
 dotnet run --project src/FriendShare.Api
@@ -190,6 +196,68 @@ Copy `.env.example` to `.env` and configure:
 All services include health check endpoints:
 - API: http://localhost:5000/health
 - Web: http://localhost:5001/health
+
+## Testing
+
+The project includes comprehensive testing at multiple levels:
+
+### Test Structure
+
+```
+tests/
+├── FriendShare.UnitTests/        # Unit tests for business logic
+├── FriendShare.IntegrationTests/ # Integration tests for API endpoints
+└── FriendShare.E2ETests/         # End-to-end tests with Playwright
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+dotnet test
+
+# Run unit tests only
+dotnet test --filter "Category=Unit"
+
+# Run integration tests
+dotnet test --filter "Category=Integration"
+
+# Run E2E tests (requires web app running on localhost:5001)
+dotnet test tests/FriendShare.E2ETests.csproj
+```
+
+### E2E Tests with Playwright
+
+The project includes Playwright-based E2E tests that validate the homepage and critical user flows:
+
+**First-time setup:**
+```bash
+# Install Playwright CLI tool
+dotnet tool install --global Microsoft.Playwright.CLI
+
+# Install Chromium browser
+playwright install chromium
+playwright install-deps chromium
+```
+
+**Running E2E tests:**
+```bash
+# 1. Start the web application (in one terminal)
+cd docker
+docker-compose up -d web
+
+# 2. Run the E2E tests (in another terminal)
+dotnet test tests/FriendShare.E2ETests.csproj
+```
+
+See [tests/E2E_README.md](tests/E2E_README.md) for detailed E2E testing documentation.
+
+### CI/CD
+
+All tests run automatically in GitHub Actions:
+- **Unit & Integration Tests**: Run on every pull request
+- **E2E Tests**: Run when web frontend code changes
+- **Docker Environment Tests**: Validate the containerized setup
 
 ## Key Features (Roadmap)
 
