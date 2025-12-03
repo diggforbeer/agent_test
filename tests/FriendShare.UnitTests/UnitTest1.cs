@@ -1,10 +1,1 @@
-﻿namespace FriendShare.UnitTests;
-
-public class UnitTest1
-{
-    [Fact]
-    public void Test1()
-    {
-
-    }
-}
+﻿// This file is intentionally removed - replaced with specific test files
