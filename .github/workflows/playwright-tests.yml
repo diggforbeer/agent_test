@@ -75,14 +75,11 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          dotnet tool install --global Microsoft.Playwright.CLI
-          playwright install chromium
-          playwright install-deps chromium
+          pwsh tests/bin/Release/net8.0/playwright.ps1 install chromium
+        working-directory: ${{ github.workspace }}
 
       - name: Run Playwright tests
         run: dotnet test tests/FriendShare.E2ETests.csproj --configuration Release --logger "trx;LogFileName=test-results.trx" --verbosity normal
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright
 
       - name: Upload test results
         if: always()
