@@ -109,6 +109,10 @@ The project uses Entity Framework Core migrations for database schema management
 ./migrations.sh list                     # List all migrations
 ```
 
+**Alternative: Use GitHub Actions workflow**
+- Go to Actions tab → "Create Database Migration" → Run workflow
+- Enter migration name and the workflow will create and commit the files
+
 See [MIGRATIONS.md](MIGRATIONS.md) for detailed documentation.
 
 ## Environment Variables
