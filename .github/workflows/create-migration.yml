@@ -1,0 +1,122 @@
+# =============================================================================
+# Database Migrations Workflow
+# Manually triggered workflow to create and commit EF Core migrations
+# =============================================================================
+
+name: Create Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_name:
+        description: 'Name of the migration (e.g., InitialCreate, AddUserProfile)'
+        required: true
+        default: 'InitialCreate'
+        type: string
+      apply_migration:
+        description: 'Apply migration to test database after creation'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-migration:
+    name: Create EF Core Migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Create migration
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=test_db;Username=test_user;Password=test_password"
+        run: |
+          dotnet ef migrations add "${{ github.event.inputs.migration_name }}" \
+            --project src/FriendShare.Infrastructure \
+            --startup-project src/FriendShare.Api \
+            --context ApplicationDbContext \
+            --verbose
+
+      - name: Apply migration (optional)
+        if: ${{ github.event.inputs.apply_migration == 'true' }}
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=test_db;Username=test_user;Password=test_password"
+        run: |
+          dotnet ef database update \
+            --project src/FriendShare.Infrastructure \
+            --startup-project src/FriendShare.Api \
+            --context ApplicationDbContext \
+            --verbose
+
+      - name: Verify migration files
+        run: |
+          echo "=== Migration files created ==="
+          ls -la src/FriendShare.Infrastructure/Migrations/
+          echo ""
+          echo "=== Migration content preview ==="
+          find src/FriendShare.Infrastructure/Migrations/ -name "*${{ github.event.inputs.migration_name }}.cs" -exec head -50 {} \;
+
+      - name: Commit migration files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add src/FriendShare.Infrastructure/Migrations/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add migration: ${{ github.event.inputs.migration_name }}"
+            git push
+            echo "Migration files committed and pushed successfully"
+          fi
+
+      - name: Create summary
+        run: |
+          echo "## Migration Created Successfully ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Migration Name:** ${{ github.event.inputs.migration_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Applied to Test DB:** ${{ github.event.inputs.apply_migration }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files Created" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          ls -1 src/FriendShare.Infrastructure/Migrations/ >> $GITHUB_STEP_SUMMARY || echo "No migrations found" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review the migration files in the commit" >> $GITHUB_STEP_SUMMARY
+          echo "2. Test locally if needed: \`./migrations.sh update\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Merge when ready" >> $GITHUB_STEP_SUMMARY
