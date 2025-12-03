@@ -254,10 +254,13 @@ See [tests/E2E_README.md](tests/E2E_README.md) for detailed E2E testing document
 
 ### CI/CD
 
-All tests run automatically in GitHub Actions:
+All tests and builds run automatically in GitHub Actions:
 - **Unit & Integration Tests**: Run on every pull request
 - **E2E Tests**: Run when web frontend code changes
 - **Docker Environment Tests**: Validate the containerized setup
+- **Docker Build & Push**: Automatically build and publish Docker images on merge to main
+
+📦 **Docker Images**: Pre-built images are automatically published to GitHub Container Registry (ghcr.io) on every merge to main. See [DOCKER_BUILD_WORKFLOW.md](DOCKER_BUILD_WORKFLOW.md) for details on using published images.
 
 ## Key Features (Roadmap)
 
