@@ -40,20 +40,20 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
+      - name: Restore E2E test dependencies
         run: dotnet restore tests/FriendShare.E2ETests.csproj
 
       - name: Build E2E test project
         run: dotnet build tests/FriendShare.E2ETests.csproj --no-restore --configuration Release
 
-      - name: Create .env file for testing
+      - name: Create .env file for Docker services
         run: |
           echo "POSTGRES_USER=test_user" >> .env
           echo "POSTGRES_PASSWORD=test_password_secure_12345" >> .env
           echo "POSTGRES_DB=friendshare" >> .env
           echo "ASPNETCORE_ENVIRONMENT=Development" >> .env
 
-      - name: Start database service
+      - name: Start Docker services (database)
         run: docker compose --env-file .env -f docker/docker-compose.yml up -d db
         timeout-minutes: 2
 
@@ -63,15 +63,15 @@ jobs:
           timeout 60 bash -c 'until docker compose --env-file .env -f docker/docker-compose.yml ps db | grep -q "healthy"; do sleep 2; echo "Waiting..."; done'
           echo "Database is healthy!"
 
-      - name: Start Web service
+      - name: Start Docker services (web)
         run: docker compose --env-file .env -f docker/docker-compose.yml up -d web
         timeout-minutes: 3
 
-      - name: Wait for Web to be healthy
+      - name: Wait for web service to be healthy
         run: |
-          echo "Waiting for Web frontend to be healthy..."
-          timeout 120 bash -c 'until curl --silent --fail http://localhost:5001/health; do sleep 3; echo "Waiting for Web..."; done'
-          echo "Web frontend is healthy!"
+          echo "Waiting for web frontend to be healthy..."
+          timeout 120 bash -c 'until curl --silent --fail http://localhost:5001/health; do sleep 3; echo "Waiting for web..."; done'
+          echo "Web frontend is healthy and ready!"
 
       - name: Install Playwright browsers
         run: |
@@ -92,14 +92,14 @@ jobs:
           path: '**/test-results.trx'
           retention-days: 30
 
-      - name: Check for errors in logs
+      - name: Display web logs on failure
         if: failure()
         run: |
-          echo "=== Web Logs ==="
-          docker compose --env-file .env -f docker/docker-compose.yml logs web --tail=100 || true
+          echo "=== Web Service Logs ==="
+          docker compose --env-file .env -f docker/docker-compose.yml logs web --tail=100 || echo "Could not retrieve logs"
 
-      - name: Cleanup
+      - name: Cleanup Docker services
         if: always()
         run: |
-          docker compose --env-file .env -f docker/docker-compose.yml down -v --remove-orphans
+          docker compose --env-file .env -f docker/docker-compose.yml down -v --remove-orphans || echo "Cleanup encountered an issue"
           echo "Cleanup complete!"
