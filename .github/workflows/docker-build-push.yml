@@ -6,14 +6,8 @@
 name: Docker Build and Push
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'docker/Dockerfile.api'
-      - 'docker/Dockerfile.web'
-      - 'FriendShare.sln'
-      - '.github/workflows/docker-build-push.yml'
+  schedule:
+    - cron: '0 2 * * *'  # Run at 2 AM UTC daily
   workflow_dispatch:
 
 # Limit permissions of GITHUB_TOKEN
@@ -53,9 +47,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=nightly
+            type=raw,value=nightly-{{date 'YYYYMMDD'}}
+            type=sha,prefix=nightly-
           labels: |
             org.opencontainers.image.title=FriendShare API
             org.opencontainers.image.description=Friend Item Sharing Platform - Web API
@@ -68,9 +62,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=nightly
+            type=raw,value=nightly-{{date 'YYYYMMDD'}}
+            type=sha,prefix=nightly-
           labels: |
             org.opencontainers.image.title=FriendShare Web
             org.opencontainers.image.description=Friend Item Sharing Platform - Web Frontend
@@ -117,6 +111,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Pull Commands" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:nightly" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:nightly" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
