@@ -41,7 +41,7 @@ public class HomepageTests : IAsyncLifetime
 
         // Assert
         var title = await _page.TitleAsync();
-        Assert.Equal("Welcome to FriendShare - Friend Share", title);
+        Assert.Equal("Welcome to FriendShare - FriendShare", title);
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class HomepageTests : IAsyncLifetime
         var step3 = _page.Locator("text=List Your Items");
         await Assertions.Expect(step3).ToBeVisibleAsync();
 
-        var step4 = _page.Locator("text=Start Sharing");
+        var step4 = _page.Locator(".how-it-works-section").Locator("text=Start Sharing");
         await Assertions.Expect(step4).ToBeVisibleAsync();
     }
 
@@ -146,7 +146,7 @@ public class HomepageTests : IAsyncLifetime
         Assert.Contains("Ready to start sharing", ctaText);
 
         // Assert - Check Sign Up button in CTA
-        var signUpButton = _page.Locator(".cta-section text=Sign Up Now");
+        var signUpButton = _page.Locator(".cta-section").Locator("text=Sign Up Now");
         await Assertions.Expect(signUpButton).ToBeVisibleAsync();
     }
 
