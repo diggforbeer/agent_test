@@ -69,3 +69,9 @@ nunit-*.xml
 
 # macOS
 .DS_Store
+
+# Playwright
+.playwright/
+playwright-report/
+test-results/
+*.trx

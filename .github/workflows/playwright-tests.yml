@@ -1,0 +1,102 @@
+# =============================================================================
+# Playwright E2E Tests
+# Validates the homepage and critical user flows using Playwright
+# =============================================================================
+
+name: Playwright E2E Tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/FriendShare.Web/**'
+      - 'tests/FriendShare.E2ETests.csproj'
+      - 'tests/HomepageTests.cs'
+      - '.github/workflows/playwright-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/FriendShare.Web/**'
+      - 'tests/FriendShare.E2ETests.csproj'
+      - 'tests/HomepageTests.cs'
+      - '.github/workflows/playwright-tests.yml'
+  workflow_dispatch:
+
+# Limit permissions of GITHUB_TOKEN
+permissions:
+  contents: read
+
+jobs:
+  playwright-tests:
+    name: Playwright Homepage Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore E2E test dependencies
+        run: dotnet restore tests/FriendShare.E2ETests.csproj
+
+      - name: Build E2E test project
+        run: dotnet build tests/FriendShare.E2ETests.csproj --no-restore --configuration Release
+
+      - name: Create .env file for Docker services
+        run: |
+          echo "POSTGRES_USER=test_user" >> .env
+          echo "POSTGRES_PASSWORD=test_password_secure_12345" >> .env
+          echo "POSTGRES_DB=friendshare" >> .env
+          echo "ASPNETCORE_ENVIRONMENT=Development" >> .env
+
+      - name: Start Docker services (database)
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d db
+        timeout-minutes: 2
+
+      - name: Wait for database to be healthy
+        run: |
+          echo "Waiting for database to be healthy..."
+          timeout 60 bash -c 'until docker compose --env-file .env -f docker/docker-compose.yml ps db | grep -q "healthy"; do sleep 2; echo "Waiting..."; done'
+          echo "Database is healthy!"
+
+      - name: Start Docker services (web)
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d web
+        timeout-minutes: 3
+
+      - name: Wait for web service to be healthy
+        run: |
+          echo "Waiting for web frontend to be healthy..."
+          timeout 120 bash -c 'until curl --silent --fail http://localhost:5001/health; do sleep 3; echo "Waiting for web..."; done'
+          echo "Web frontend is healthy and ready!"
+
+      - name: Install Playwright browsers
+        run: |
+          pwsh tests/bin/Release/net8.0/playwright.ps1 install chromium
+        working-directory: ${{ github.workspace }}
+
+      - name: Run Playwright tests
+        run: dotnet test tests/FriendShare.E2ETests.csproj --configuration Release --logger "trx;LogFileName=test-results.trx" --verbosity normal
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: '**/test-results.trx'
+          retention-days: 30
+
+      - name: Display web logs on failure
+        if: failure()
+        run: |
+          echo "=== Web Service Logs ==="
+          docker compose --env-file .env -f docker/docker-compose.yml logs web --tail=100 || echo "Could not retrieve logs"
+
+      - name: Cleanup Docker services
+        if: always()
+        run: |
+          docker compose --env-file .env -f docker/docker-compose.yml down -v --remove-orphans || echo "Cleanup encountered an issue"
+          echo "Cleanup complete!"
