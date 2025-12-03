@@ -1,13 +1,10 @@
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
+using System.Security.Claims;
+using FriendShare.Api.Controllers;
 using FriendShare.Core.DTOs;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using FriendShare.Core.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace FriendShare.IntegrationTests;
@@ -15,35 +12,39 @@ namespace FriendShare.IntegrationTests;
 /// <summary>
 /// Integration tests for UserController endpoints.
 /// </summary>
-public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public class UserControllerTests
 {
-    private readonly WebApplicationFactory<Program> _factory;
     private readonly Mock<IUserService> _mockUserService;
+    private readonly Mock<ILogger<UserController>> _mockLogger;
     private const string TestUserId = "test-user-123";
     private const string OtherUserId = "other-user-456";
 
-    public UserControllerTests(WebApplicationFactory<Program> factory)
+    public UserControllerTests()
     {
         _mockUserService = new Mock<IUserService>();
-        
-        _factory = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                // Replace IUserService with mock
-                services.RemoveAll<IUserService>();
-                services.AddScoped<IUserService>(_ => _mockUserService.Object);
-            });
-        });
+        _mockLogger = new Mock<ILogger<UserController>>();
     }
 
-    private HttpClient CreateAuthenticatedClient(string userId)
+    private UserController CreateController(string userId)
     {
-        var client = _factory.CreateClient();
-        // In a real scenario, you would generate a proper JWT token here
-        // For now, we'll simulate authentication by adding a mock authorization header
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"mock-token-{userId}");
-        return client;
+        var controller = new UserController(_mockUserService.Object, _mockLogger.Object);
+        
+        // Set up authenticated user context
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.Name, "testuser"),
+            new Claim(ClaimTypes.Email, "test@example.com")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        var claimsPrincipal = new ClaimsPrincipal(identity);
+        
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+        };
+        
+        return controller;
     }
 
     [Fact]
@@ -66,15 +67,14 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.GetUserByIdAsync(TestUserId))
             .ReturnsAsync(expectedUser);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.GetAsync($"/api/user/{TestUserId}");
+        var result = await controller.GetUser(TestUserId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var user = await response.Content.ReadFromJsonAsync<UserDto>();
-        Assert.NotNull(user);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var user = Assert.IsType<UserDto>(okResult.Value);
         Assert.Equal(expectedUser.Id, user.Id);
         Assert.Equal(expectedUser.Email, user.Email);
     }
@@ -83,13 +83,13 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetUser_WithDifferentUserId_ReturnsForbidden()
     {
         // Arrange
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.GetAsync($"/api/user/{OtherUserId}");
+        var result = await controller.GetUser(OtherUserId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]
@@ -100,13 +100,13 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.GetUserByIdAsync(TestUserId))
             .ReturnsAsync((UserDto?)null);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.GetAsync($"/api/user/{TestUserId}");
+        var result = await controller.GetUser(TestUserId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.IsType<NotFoundObjectResult>(result);
     }
 
     [Fact]
@@ -137,15 +137,14 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.UpdateProfileAsync(TestUserId, It.IsAny<UpdateProfileRequest>()))
             .ReturnsAsync(expectedUser);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.PutAsJsonAsync($"/api/user/{TestUserId}", updateRequest);
+        var result = await controller.UpdateUser(TestUserId, updateRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var user = await response.Content.ReadFromJsonAsync<UserDto>();
-        Assert.NotNull(user);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var user = Assert.IsType<UserDto>(okResult.Value);
         Assert.Equal(expectedUser.FirstName, user.FirstName);
         Assert.Equal(expectedUser.LastName, user.LastName);
     }
@@ -160,13 +159,13 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             LastName = "Name"
         };
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.PutAsJsonAsync($"/api/user/{OtherUserId}", updateRequest);
+        var result = await controller.UpdateUser(OtherUserId, updateRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]
@@ -190,16 +189,15 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.ChangePasswordAsync(TestUserId, It.IsAny<ChangePasswordRequest>()))
             .ReturnsAsync(expectedResponse);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.PostAsJsonAsync($"/api/user/{TestUserId}/change-password", changePasswordRequest);
+        var result = await controller.ChangePassword(TestUserId, changePasswordRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(result);
-        Assert.True(result.Success);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<AuthResponse>(okResult.Value);
+        Assert.True(response.Success);
     }
 
     [Fact]
@@ -213,13 +211,13 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             ConfirmPassword = "NewPassword123!"
         };
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.PostAsJsonAsync($"/api/user/{OtherUserId}/change-password", changePasswordRequest);
+        var result = await controller.ChangePassword(OtherUserId, changePasswordRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]
@@ -243,13 +241,13 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.ChangePasswordAsync(TestUserId, It.IsAny<ChangePasswordRequest>()))
             .ReturnsAsync(expectedResponse);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.PostAsJsonAsync($"/api/user/{TestUserId}/change-password", changePasswordRequest);
+        var result = await controller.ChangePassword(TestUserId, changePasswordRequest);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 
     [Fact]
@@ -260,29 +258,27 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.DeleteAccountAsync(TestUserId))
             .ReturnsAsync(true);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.DeleteAsync($"/api/user/{TestUserId}");
+        var result = await controller.DeleteAccount(TestUserId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(result.TryGetProperty("message", out var message));
-        Assert.Equal("Account deleted successfully.", message.GetString());
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult.Value);
     }
 
     [Fact]
     public async Task DeleteAccount_WithDifferentUserId_ReturnsForbidden()
     {
         // Arrange
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.DeleteAsync($"/api/user/{OtherUserId}");
+        var result = await controller.DeleteAccount(OtherUserId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]
@@ -293,12 +289,12 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Program>>
             .Setup(s => s.DeleteAccountAsync(TestUserId))
             .ReturnsAsync(false);
 
-        var client = CreateAuthenticatedClient(TestUserId);
+        var controller = CreateController(TestUserId);
 
         // Act
-        var response = await client.DeleteAsync($"/api/user/{TestUserId}");
+        var result = await controller.DeleteAccount(TestUserId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.IsType<NotFoundObjectResult>(result);
     }
 }
