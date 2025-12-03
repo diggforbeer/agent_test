@@ -60,6 +60,39 @@ tests/
 - Use environment variables for configuration
 - Support both development and production configurations
 
+### Database & Migrations
+- **Repository Pattern**: All database interactions MUST use the repository pattern
+- **Code-First Migrations**: Use Entity Framework Core code-first approach
+- **Migration Guidelines**:
+  - Create migrations for all schema changes: `dotnet ef migrations add MigrationName`
+  - Review generated migration code before applying
+  - Test migrations in development before production
+  - Include both Up and Down methods for rollback capability
+  - Apply migrations on application startup in development
+  - Use migration scripts for production deployments
+- **Repository Best Practices**:
+  - Define interfaces in `FriendShare.Core`
+  - Implement repositories in `FriendShare.Infrastructure`
+  - Use generic repository for common CRUD operations
+  - Create specific repositories for complex queries
+  - Return domain models, not EF entities directly
+  - Use async methods for all database operations
+
+### Migration Commands
+```bash
+# Add a new migration
+dotnet ef migrations add MigrationName --project src/FriendShare.Infrastructure --startup-project src/FriendShare.Api
+
+# Apply migrations to database
+dotnet ef database update --project src/FriendShare.Infrastructure --startup-project src/FriendShare.Api
+
+# Remove last migration (if not applied)
+dotnet ef migrations remove --project src/FriendShare.Infrastructure --startup-project src/FriendShare.Api
+
+# Generate SQL script
+dotnet ef migrations script --project src/FriendShare.Infrastructure --startup-project src/FriendShare.Api
+```
+
 ## When Assisting
 
 1. **Code Implementation**: Write clean, maintainable, well-documented C# code
