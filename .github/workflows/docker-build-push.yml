@@ -78,7 +78,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push API Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/Dockerfile.api
@@ -90,7 +90,7 @@ jobs:
           platforms: linux/amd64
 
       - name: Build and push Web Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/Dockerfile.web
