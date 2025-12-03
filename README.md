@@ -86,12 +86,30 @@ dotnet restore
 dotnet build
 dotnet test
 
+# Setup database migrations (first time only)
+dotnet tool install --global dotnet-ef
+./migrations.sh create InitialCreate
+./migrations.sh update
+
 # Run API
 dotnet run --project src/FriendShare.Api
 
 # Run Web (separate terminal)
 dotnet run --project src/FriendShare.Web
 ```
+
+## Database Migrations
+
+The project uses Entity Framework Core migrations for database schema management.
+
+**Quick commands:**
+```bash
+./migrations.sh create <MigrationName>   # Create new migration
+./migrations.sh update                   # Apply migrations
+./migrations.sh list                     # List all migrations
+```
+
+See [MIGRATIONS.md](MIGRATIONS.md) for detailed documentation.
 
 ## Environment Variables
 
